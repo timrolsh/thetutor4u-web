@@ -4,10 +4,10 @@ import Header from "./Header";
 
 //TODO implement the rest of the dashboard page
 
-export default () => {
-    return (
-        <>
-            <Header></Header>
-        </>
-    );
-};
+function Dashboard() {
+    return (<>
+        <Header signedIn="true"></Header>
+    </>);
+}
+
+export default Dashboard;

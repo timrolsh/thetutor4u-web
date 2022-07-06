@@ -1,5 +1,22 @@
-/* style corresponds to Header.jsx component */
+/* this style file corresponds to Header.jsx component */
 
 #header {
     background-color: #c9c84c;
+    /*evens out the spacing for the hamburger button*/
+    padding-bottom: 4px;
+}
+
+/* gets rid of background color and outline of the bootstrap dropdown */
+#hamburger-menu-outer {
+    background-color: transparent;
+    border-width: 0;
+    border-color: transparent;
+}
+/* gets rid of arrow symbol next to the bootstrap dropdown */
+#hamburger-menu-outer::before {
+    content: none;
+}
+/* gets rid of arrow symbol next to the bootstrap dropdown */
+#hamburger-menu-outer::after {
+    content: none;
 }
