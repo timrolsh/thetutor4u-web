@@ -1,6 +1,6 @@
 import React from "react";
 
-function calendar() {
+function calendar(): JSX.Element {
     return <></>;
 }
 

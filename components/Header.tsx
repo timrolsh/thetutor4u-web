@@ -23,18 +23,18 @@ Navigation bar layout:
 
 import React from "react";
 import styles from "../styles/Header.module.css";
-import {Dropdown, Navbar} from "react-bootstrap";
+import {Dropdown, Container, Nav} from "react-bootstrap";
 import Image from "next/image";
 
-const hamburgerMenuSize = 35;
+const hamburgerMenuSize: number = 35;
 
 // this row will always be in the hamburger menu, when the user is signed in and when they are not signed in
-function AboutRow() {
+function AboutRow(): JSX.Element {
     return <Dropdown.Item>About</Dropdown.Item>;
 }
 
 // these rows should only be rendered when the user is signed in to the app
-function SignedInRows() {
+function SignedInRows(): JSX.Element {
     return (
         <>
             <Dropdown.Item>Dashboard</Dropdown.Item>
@@ -43,19 +43,14 @@ function SignedInRows() {
     );
 }
 
-/* this header requires the following props
-{
-signedIn: boolean
+interface HeaderProps {
+    signedIn: boolean;
 }
 
- */
-function Header(props) {
-    function DashboardRows() {
-        if (props.signedIn === false) {
-            return (
-                <AboutRow></AboutRow>
-
-            );
+function Header(props: HeaderProps): JSX.Element {
+    function DashboardRows(): JSX.Element {
+        if (!props.signedIn) {
+            return <AboutRow></AboutRow>;
         }
         return (
             <>
@@ -68,32 +63,35 @@ function Header(props) {
     return (
         <>
             {/* navbar that will be at the top of the page */}
-            <Navbar id={styles["header"]}>
-                {/* hamburger menu on the left */}
-                <Dropdown>
-                    <Dropdown.Toggle id={styles["hamburger-menu-outer"]}>
-                        <Image
-                            src={"/images/hamburger-menu.png"}
-                            width={hamburgerMenuSize}
-                            height={hamburgerMenuSize}
-                            alt={"Hamburger Menu"}
-                        ></Image>
-                    </Dropdown.Toggle>
+            <Nav id={styles["header"]}>
+                <Container fluid>
+                    {/* hamburger menu on the left */}
+                    <Dropdown>
+                        <Dropdown.Toggle id={styles["hamburger-menu-outer"]}>
+                            <Image
+                                src={"/images/hamburger-menu.png"}
+                                width={hamburgerMenuSize}
+                                height={hamburgerMenuSize}
+                                alt={"Hamburger Menu"}
+                            ></Image>
+                        </Dropdown.Toggle>
 
-                    <Dropdown.Menu>
-                        <DashboardRows></DashboardRows>
-                    </Dropdown.Menu>
-                </Dropdown>
-                {/* logo that will be in the middle of the header */}
-                {/*TODO continue working from here and finish centering it*/}
-                {/*TODO set up Prettier as the formatter for Webstorm*/}
-                <Image
-                    src="/images/logo.png"
-                    width={200}
-                    height={100}
-                    alt="TheTutor4U Logo"
-                ></Image>
-            </Navbar>
+                        <Dropdown.Menu>
+                            <DashboardRows></DashboardRows>
+                        </Dropdown.Menu>
+                    </Dropdown>
+                    {/* logo that will be in the middle of the header */}
+
+                    <div className="text-center">
+                        <Image
+                            src="/images/logo.png"
+                            width={200}
+                            height={100}
+                            alt="TheTutor4U Logo"
+                        ></Image>
+                    </div>
+                </Container>
+            </Nav>
         </>
     );
 }

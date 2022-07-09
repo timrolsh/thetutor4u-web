@@ -1,4 +1,4 @@
-/* this style file corresponds to Header.jsx component */
+/* this style file corresponds to Header.tsx component */
 
 #header {
     background-color: #c9c84c;
@@ -12,10 +12,12 @@
     border-width: 0;
     border-color: transparent;
 }
+
 /* gets rid of arrow symbol next to the bootstrap dropdown */
 #hamburger-menu-outer::before {
     content: none;
 }
+
 /* gets rid of arrow symbol next to the bootstrap dropdown */
 #hamburger-menu-outer::after {
     content: none;
