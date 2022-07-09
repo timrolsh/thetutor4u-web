@@ -1,11 +1,7 @@
 import React from "react";
 
 function about() {
-    return (
-        <>
-            
-    </>
-    );
+    return <></>;
 }
 
 export default about;

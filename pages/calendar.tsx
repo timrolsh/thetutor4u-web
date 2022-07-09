@@ -1,11 +1,7 @@
 import React from "react";
 
 function calendar() {
-    return (
-        <>
-            
-    </>
-    );
+    return <></>;
 }
 
 export default calendar;

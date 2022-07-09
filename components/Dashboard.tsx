@@ -6,8 +6,8 @@ import Header from "./Header";
 
 function Dashboard() {
     return (<>
-        <Header signedIn="true"></Header>
-    </>);
+            <Header signedIn="true"></Header>
+        </>);
 }
 
 export default Dashboard;

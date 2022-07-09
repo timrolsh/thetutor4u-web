@@ -23,7 +23,7 @@ Navigation bar layout:
 
 import React from "react";
 import styles from "../styles/Header.module.css";
-import { Dropdown, Navbar } from "react-bootstrap";
+import {Dropdown, Navbar} from "react-bootstrap";
 import Image from "next/image";
 
 const hamburgerMenuSize = 35;
@@ -51,16 +51,18 @@ signedIn: boolean
  */
 function Header(props) {
     function DashboardRows() {
-        if (props.signedIn === true) {
+        if (props.signedIn === false) {
             return (
-                <>
-                    <SignedInRows></SignedInRows>
-                    <AboutRow></AboutRow>
-                </>
+                <AboutRow></AboutRow>
+
             );
-        } else {
-            return <AboutRow></AboutRow>;
         }
+        return (
+            <>
+                <SignedInRows></SignedInRows>
+                <AboutRow></AboutRow>
+            </>
+        );
     }
 
     return (
@@ -83,6 +85,8 @@ function Header(props) {
                     </Dropdown.Menu>
                 </Dropdown>
                 {/* logo that will be in the middle of the header */}
+                {/*TODO continue working from here and finish centering it*/}
+                {/*TODO set up Prettier as the formatter for Webstorm*/}
                 <Image
                     src="/images/logo.png"
                     width={200}
