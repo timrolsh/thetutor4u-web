@@ -8,9 +8,9 @@ import isLoggedIn from "../ts/isLoggedIn";
 // if the user is logged in and goes to the home page, redirect them to the /dashboard page
 function index(): JSX.Element {
     if (isLoggedIn()) {
-        return <Dashboard></Dashboard>;
+        return <Dashboard />;
     }
-    return <Homepage></Homepage>;
+    return <Homepage />;
 }
 
 export default index;
