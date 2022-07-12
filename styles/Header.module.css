@@ -1,12 +1,84 @@
-/*put row at the top of the page, make it span across the width of the whole page, set its background color and center
-all elements within the row vertically*/
+/*import Open Sans font from google fonts*/
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&display=swap");
+
+/*put row at the top of the page, make it span across the width of the whole page, set its background color, make 3 
+equal columns using the CSS grid system*/
 #top-row {
     top: 0;
     left: 0;
     right: 0;
-    position: fixed;
+    margin: 0;
+    padding: 0;
+    position: absolute;
     width: 100%;
     background-color: #c9c84c;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+#page-nav-list-container {
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+/*left container that will have all the links */
+#left-container {
     display: flex;
     align-items: center;
+    justify-content: flex-start;
+    flex-grow: 1;
+}
+
+#left-container div {
+    margin: 1px;
+    padding: 15px;
+    background-color: #a85c38;
+    border: 5px solid black;
+}
+
+#left-container div a {
+    font-family: "Open Sans", sans-serif;
+    color: black;
+    text-decoration: none;
+}
+#left-container div a:link {
+    text-decoration: none;
+}
+#left-container div a:visited {
+    text-decoration: none;
+}
+#left-container div a:hover {
+    text-decoration: none;
+}
+#left-container div a:active {
+    text-decoration: none;
+}
+
+#center-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+#center-container img {
+    width: calc(500px / 3);
+    height: calc(276px / 3);
+}
+
+#right-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-grow: 1;
+}
+
+#right-container img {
+    width: calc(4837px / 25);
+    height: calc(1000px / 25);
+}
+
+.images {
+    max-width: 100%;
+    max-height: 100%;
 }
