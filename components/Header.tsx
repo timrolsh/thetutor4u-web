@@ -1,5 +1,7 @@
 /*
-This header will be at the top of every page of the website, and its appearance will change based on what page of the website the user is on
+This header will be at the top of every page of the website, and its appearance will change based on what page of the
+website the user is on: This is specified in the _app.tsx file, no need to put this component and the footer component
+in every page manually.
 Navigation bar layout:
 * Left: Hamburger Menu
     * Icon Appearance: the appearance of the Hamburger Menu will always be the 3 lines no matter what
@@ -21,53 +23,99 @@ Navigation bar layout:
 
 import React from "react";
 import styles from "../styles/Header.module.css";
-import Link from "next/link";
+import {Dropdown} from "react-bootstrap";
 
 /*
 this function returns the Page Navigation as a horizontal list of links to pages across the website, which will be
 different based on whether the user is logged in or not
  */
-function PageNavigationAsList(props: {signedIn: boolean}): JSX.Element {
-    function ListLink(listLinkProps: {href: string; text: string}): JSX.Element {
+function NavigationMenu(props: {signedIn: boolean}): JSX.Element {
+    function ListItem(ListItemProps: {href: string; class: string; text: string; listItems: number}): JSX.Element {
         return (
-            <div className={styles["text-container"]}>
-                <Link href={listLinkProps.href}>{listLinkProps.text}</Link>
-            </div>
+            <li style={{width: `${(1 / ListItemProps.listItems) * 100}%`}} className={styles["li"]}>
+                <a href={ListItemProps.href}>
+                    <i className={ListItemProps.class}></i>
+                    <span>{ListItemProps.text}</span>
+                </a>
+            </li>
         );
     }
 
-    if (props.signedIn) {
+    function List(): JSX.Element {
+        if (props.signedIn) {
+            const items: number = 4;
+            return (
+                <>
+                    <ListItem listItems={items} href={"/dashboard"} class={"fa fa-id-card"} text={"Dashboard"} />
+                    <ListItem listItems={items} href={"/calendar"} class={"fa fa-calendar-check"} text={"Calendar"} />
+                    <ListItem listItems={items} href={"/balance"} class={"fa fa-credit-card"} text={"Balance"} />
+                    <ListItem listItems={items} href={"/about"} class={"fa fa-info"} text={"About"} />
+                </>
+            );
+        }
+        const items: number = 1;
         return (
             <>
-                <ListLink href={"/dashboard"} text={"Dashboard"} />
-                <ListLink href={"/calendar"} text={"Calendar"} />
-                <ListLink href={"/balance"} text={"Balance"} />
-                <ListLink href={"/about"} text={"About"} />
+                <ListItem listItems={items} href={"/about"} class={"fa fa-info"} text={"About"} />
+            </>
+        );
+    }
+
+    return (
+        <>
+            <div id={styles["navigation-bar"]}>
+                <ul>
+                    <List />
+                </ul>
+            </div>
+        </>
+    );
+}
+
+function SignedInMenu(props: {signedIn: boolean}): JSX.Element {
+    function Items(): JSX.Element {
+        if (props.signedIn) {
+            return (
+                <>
+                    <Dropdown.Item href="#/action-1">Profile</Dropdown.Item>
+                    <Dropdown.Item href="#/action-2">Settings</Dropdown.Item>
+                </>
+            );
+        }
+        return (
+            <>
+                <Dropdown.Item href="#/action-1">Sign In</Dropdown.Item>
+                <Dropdown.Item href="#/action-2">Sign Up</Dropdown.Item>
             </>
         );
     }
     return (
         <>
-            <ListLink href={"/about"} text={"About"} />
+            <Dropdown>
+                <Dropdown.Toggle id={styles["sign-in-button"]}>
+                    <img src="/images/not-signed-in.png" alt={"Not Signed In"}></img>
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu>
+                    <Items />
+                </Dropdown.Menu>
+            </Dropdown>
         </>
     );
 }
 
-// TODO implement two components, one that has then all laid out and another one with the hamburger menu
-// you can use screen.width to get the size of the screen directly from the JS DOM
 function Header(props: {signedIn: boolean}): JSX.Element {
     return (
         <>
             <div id={styles["top-row"]}>
-                <div id={styles["left-container"]}>
-                    {/*<PageNavigationAsList signedIn={props.signedIn} />*/}
-                    <PageNavigationAsList signedIn={true} />
-                </div>
+                <NavigationMenu signedIn={props.signedIn} />
                 <div id={styles["center-container"]}>
-                    <img src="/images/logo.png" alt="Logo with text"></img>
+                    <a href="/">
+                        <img src="/images/logo.png" alt="Logo with text"></img>
+                    </a>
                 </div>
                 <div id={styles["right-container"]}>
-                    <img src="/images/not-signed-in.png" alt="Not Signed In"></img>
+                    <SignedInMenu signedIn={props.signedIn} />
                 </div>
             </div>
         </>
