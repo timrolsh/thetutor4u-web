@@ -1,5 +1,7 @@
-/* 
-This header will be at the top of every page of the website, and its appearance will change based on what page of the website the user is on
+/*
+This header will be at the top of every page of the website, and its appearance will change based on what page of the
+website the user is on: This is specified in the _app.tsx file, no need to put this component and the footer component
+in every page manually.
 Navigation bar layout:
 * Left: Hamburger Menu
     * Icon Appearance: the appearance of the Hamburger Menu will always be the 3 lines no matter what
@@ -19,123 +21,104 @@ Navigation bar layout:
         - Settings (if signed in)
 */
 
-// TODO implement the rest of the header component
-
 import React from "react";
 import styles from "../styles/Header.module.css";
-import {Dropdown, Container, Row} from "react-bootstrap";
-import Image from "next/image";
-import Link from "next/link";
+import {Dropdown} from "react-bootstrap";
 
-const hamburgerMenuSize: string = "50%";
+/*
+this function returns the Page Navigation as a horizontal list of links to pages across the website, which will be
+different based on whether the user is logged in or not
+ */
+//TODO make this navigation menu turn into a hamburger menu when the viewport width becomes smaller
+function NavigationMenu(props: {signedIn: boolean}): JSX.Element {
+    function ListItem(ListItemProps: {href: string; class: string; text: string; listItems: number}): JSX.Element {
+        return (
+            <li style={{width: `${(1 / ListItemProps.listItems) * 100}%`}} className={styles["li"]}>
+                <a href={ListItemProps.href}>
+                    <i className={ListItemProps.class}></i>
+                    <span>{ListItemProps.text}</span>
+                </a>
+            </li>
+        );
+    }
 
-interface RowLinkProps {
-    rowText: string;
-    href: string;
-}
-function RowLink(props: RowLinkProps): JSX.Element {
-    const href: string = `/${props.href}`;
-    return (
-        <>
-            <Dropdown.Item>
-                <Link href={href}>
-                    <a className={styles["link"]}>{props.rowText}</a>
-                </Link>
-            </Dropdown.Item>
-        </>
-    );
-}
-
-interface HeaderProps {
-    signedIn: boolean;
-}
-
-function Header(props: HeaderProps): JSX.Element {
-    function DashboardRows(): JSX.Element {
-        if (!props.signedIn) {
-            return <RowLink rowText={"About"} href={"about"} />;
+    function List(): JSX.Element {
+        if (props.signedIn) {
+            const items: number = 4;
+            return (
+                <>
+                    <ListItem listItems={items} href={"/dashboard"} class={"fa fa-id-card"} text={"Dashboard"} />
+                    <ListItem listItems={items} href={"/calendar"} class={"fa fa-calendar-check"} text={"Calendar"} />
+                    <ListItem listItems={items} href={"/balance"} class={"fa fa-credit-card"} text={"Balance"} />
+                    <ListItem listItems={items} href={"/about"} class={"fa fa-info"} text={"About"} />
+                </>
+            );
         }
+        const items: number = 1;
         return (
             <>
-                <RowLink rowText={"Dashboard"} href={"dashboard"} />
-                <RowLink rowText={"Calendar"} href={"calendar"} />
-                <RowLink rowText={"About"} href={"about"} />
+                <ListItem listItems={items} href={"/about"} class={"fa fa-info"} text={"About"} />
             </>
         );
     }
 
-    function SignedInMenu(): JSX.Element {
-        // if user is not signed in, return style
-        if (!props.signedIn) {
+    return (
+        <>
+            <div id={styles["navigation-bar"]}>
+                <ul>
+                    <List />
+                </ul>
+            </div>
+        </>
+    );
+}
+
+function SignedInMenu(props: {signedIn: boolean}): JSX.Element {
+    function Items(): JSX.Element {
+        if (props.signedIn) {
             return (
                 <>
-                    <div className="col" id={styles["shift-right"]}>
-                        <Dropdown>
-                            <Dropdown.Toggle id={styles["menu-outer"]}>
-                                <Image
-                                    src={"/images/not-signed-in.png"}
-                                    width={"200%"}
-                                    height={hamburgerMenuSize}
-                                    alt={"Hamburger Menu"}
-                                ></Image>
-                            </Dropdown.Toggle>
-
-                            <Dropdown.Menu>
-                                {/* TODO add the proper hyperlinks to these once authentication is set up */}
-                                <Dropdown.Item>Sign Up</Dropdown.Item>
-                                <Dropdown.Item>Sign In</Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </div>
+                    <Dropdown.Item href="#/action-1">Profile</Dropdown.Item>
+                    <Dropdown.Item href="#/action-2">Settings</Dropdown.Item>
                 </>
             );
         }
-        return <></>;
+        return (
+            <>
+                <Dropdown.Item href="#/action-1">Sign In</Dropdown.Item>
+                <Dropdown.Item href="#/action-2">Sign Up</Dropdown.Item>
+            </>
+        );
     }
-
     return (
         <>
-            {/* put everything in container to work with bootstrap */}
-            <Container fluid={true}>
-                {/* navbar that will be at the top of the page */}
-                <Row id={styles["header"]}>
-                    {/* using standard divs to use the col-2 bootstrap grid system */}
-                    <div className="col-2">
-                        <Dropdown>
-                            <Dropdown.Toggle id={styles["menu-outer"]}>
-                                <Image
-                                    src={"/images/hamburger-menu.png"}
-                                    width={hamburgerMenuSize}
-                                    height={hamburgerMenuSize}
-                                    alt={"Hamburger Menu"}
-                                ></Image>
-                            </Dropdown.Toggle>
+            <Dropdown>
+                <Dropdown.Toggle id={styles["sign-in-button"]}>
+                    <img src="/images/not-signed-in.png" alt={"Not Signed In"}></img>
+                </Dropdown.Toggle>
 
-                            <Dropdown.Menu>
-                                <DashboardRows></DashboardRows>
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </div>
-                    {/* TODO dont know if there is a better way to center this image while keeping it inside the row, implementation is a little sloppy as of right now, causing cursor: pointer to show up far to the left and right from where the actual image is*/}
-                    <div
-                        className="col col-4 offset-2"
-                        id={styles["logo-image"]}
-                    >
-                        <Link href="/">
-                            <div className={styles["row-images"]}>
-                                <Image
-                                    id={styles["image-link"]}
-                                    src="/images/logo.png"
-                                    layout="fill"
-                                    alt="TheTutor4U Logo"
-                                    objectFit="contain"
-                                ></Image>
-                            </div>
-                        </Link>
-                    </div>
-                    <SignedInMenu />
-                </Row>
-            </Container>
+                <Dropdown.Menu>
+                    <Items />
+                </Dropdown.Menu>
+            </Dropdown>
+        </>
+    );
+}
+
+function Header(props: {signedIn: boolean}): JSX.Element {
+    return (
+        <>
+            <div id={styles["top-row"]}>
+                <NavigationMenu signedIn={props.signedIn} />
+                <div id={styles["center-container"]}>
+                    <a href="/">
+                        <img src="/images/logo.png" alt="Logo with text"></img>
+                    </a>
+                </div>
+                <div id={styles["right-container"]}>
+                    <SignedInMenu signedIn={props.signedIn} />
+                </div>
+            </div>
         </>
     );
 }

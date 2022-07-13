@@ -4,10 +4,11 @@
     "singleQuote": false,
     "tabWidth": 4,
     "useTabs": false,
-    "printWidth": 80,
+    "printWidth": 120,
     "quoteProps": "as-needed",
     "jsxSingleQuote": false,
     "bracketSpacing": false,
     "bracketSameLine": false,
-    "arrowParens": "always"
+    "arrowParens": "always",
+    "endOfLine": "auto"
 }
