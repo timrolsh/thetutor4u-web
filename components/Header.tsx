@@ -29,6 +29,7 @@ import {Dropdown} from "react-bootstrap";
 this function returns the Page Navigation as a horizontal list of links to pages across the website, which will be
 different based on whether the user is logged in or not
  */
+//TODO make this navigation menu turn into a hamburger menu when the viewport width becomes smaller
 function NavigationMenu(props: {signedIn: boolean}): JSX.Element {
     function ListItem(ListItemProps: {href: string; class: string; text: string; listItems: number}): JSX.Element {
         return (
