@@ -33,5 +33,7 @@ yarn-error.log*
 
 todo.txt
 
+#jetbrains configuration files, can remove later
 .idea/
+db/.idea/
 a/

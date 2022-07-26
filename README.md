@@ -44,6 +44,8 @@ npm install --global yarn
 
 ```
 
+- Docker (For hosting a development database with some sample data): [https://docs.docker.com/desktop/install/windows-install/](https://docs.docker.com/desktop/install/windows-install/)
+
 ### Getting Started with Development
 
 After cloning the repository, run the following to begin working on the project:
@@ -53,6 +55,15 @@ After cloning the repository, run the following to begin working on the project:
 -   run `yarn dev` to launch the development environment. Anytime a change is made to any file in the file system, the environment will refresh and the page will soft reload. Nextjs will log everytime it re-compiles the page to the terminal
 
 Eventually when putting in production, run `yarn build` and then `yarn start` to start an instance of the server
+
+#### Getting started with the database
+You can host a "development database", a database with some sample data for development purposes. Data changed inside of here will not affect the actual database.
+
+- cd into the [db](./db/) folder
+- make sure docker desktop is running on your computer
+- build an image from the Dockerfile using the following command: ``docker build -t "thetutor4u-db-image" .``
+- Launch the image and expose it to the computer on the postgres default post, 5432, with the following command: ``docker run --name thetutor4u-db -d -p 5432:5432 thetutor4u-db-image``
+- Populate the new empty database with the data schema and the sample data by running the following command: ``docker exec thetutor4u-db psql -f /script/init_db.sql``
 
 ### Note about NPM/Yarn
 
