@@ -2,7 +2,7 @@
 
 A web app that connects tutors with students around the world in a timely manner.
 
-## General Info
+## App Idea/General Info
 
 ### **Instant Tutoring**
 
@@ -30,29 +30,41 @@ Every user has a "balance". Any user can add to their balance using payment meth
 
 ## Technical Info
 
-This project is built with Nextjs, which makes it easy to build a multi page web app, do page routing, do server side rendering and static page generation, all while using React. Typescript is also used in both react components and general typescript code.
+### **Project Tools/Requirements**
 
-### Requirements
+-   Nextjs (server side rendering, api, static page generation, multi page web apps with react)
+-   React
+-   Typescript
+-   PostgeSQL (relational database, for now)
+    **Node, docker, and yarn need to be manually installed. Node and docker make it possible to use all the other tools in the project**
 
--   Nodejs (LTS version is fine): [https://nodejs.org/en/download/](https://nodejs.org/en/download/)
+-   Node (js runtime)
+    -   **Download:** (LTS version is fine): [https://nodejs.org/en/download/](https://nodejs.org/en/download/)
+-   Yarn (project package manager):
+    -   Install will only work once node is installed. Run the following command: `npm install --global yarn`
+-   Docker (only running postgres for now)
+    -   **Download:** [https://docs.docker.com/desktop/install/windows-install/](https://docs.docker.com/desktop/install/windows-install/)
 
--   Yarn (package manager): Run command once nodejs is installed:
+### **Development Enviornment Setup**
 
-```shell
-
-npm install --global yarn
-
-```
-
-### Getting Started with Development
-
-After cloning the repository, run the following to begin working on the project:
-
--   run `yarn` with no args: yarn will use the yarn.lock file to download all necessary dependencies and put them in the node_modules folder
-
+-   clone the repository
+-   run `yarn` with no args. The package manager will download and install all the necessary dependencies for this project and put them in the node_modules folder
 -   run `yarn dev` to launch the development environment. Anytime a change is made to any file in the file system, the environment will refresh and the page will soft reload. Nextjs will log everytime it re-compiles the page to the terminal
 
-Eventually when putting in production, run `yarn build` and then `yarn start` to start an instance of the server
+**Getting started with the database**
+
+You can host a "development database", a database with some sample data for development purposes. Data changed inside of here will not affect the actual database.
+
+-   cd into the [db](./db/) folder
+
+-   make sure docker desktop is running on your computer
+
+-   build an image from the Dockerfile using the following command: `docker build -t "thetutor4u-db-image" .`
+
+-   Launch the image and expose it to the host computer on the postgres default post, 5432, with the following command: `docker run --name thetutor4u-db -d -p 5432:5432 thetutor4u-db-image`
+
+-   Populate the new empty database with the data schema and the sample data by running the following command: `docker exec thetutor4u-db psql -f /script/init_db.sql`
+-   Note: If changes are made to the [db/init_db.sql](db/init_db.sql) file, the container and image must be deleted. This can be done with the Docker Desktop app.
 
 ### Note about NPM/Yarn
 
@@ -61,14 +73,3 @@ This project uses Yarn as its package manager, please do not use NPM while worki
 ### Linting/Formatting
 
 ESLint and Prettier are used for code linting, Prettier is used for code formatting and its ruled are set up in [.prettierrc.json](./.prettierrc.json). The ESLint config is set up in [.eslintrc.json](./.eslintrc.json).
-
-### Todo
-
--   finish the rest of the UI
-
--   add authentication with auth0
-
--   set up the database
-
--   set up api to get and send data to the database (will probably do it through nextjs pages/api)
--   Containerize, set up CI/CD, deploy

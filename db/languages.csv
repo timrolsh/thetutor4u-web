@@ -1,0 +1,183 @@
+language_code,language_name,id
+aa,Afar,0
+ab,Abkhaz,1
+ae,Avestan,2
+af,Afrikaans,3
+ak,Akan,4
+am,Amharic,5
+an,Aragonese,6
+ar,Arabic,7
+as,Assamese,8
+av,Avaric,9
+ay,Aymara,10
+az,Azerbaijani,11
+ba,Bashkir,12
+be,Belarusian,13
+bg,Bulgarian,14
+bh,Bihari,15
+bi,Bislama,16
+bm,Bambara,17
+bn,Bengali,18
+bo,"Tibetan Standard, Tibetan, Central",19
+br,Breton,20
+bs,Bosnian,21
+ca,Catalan; Valencian,22
+ce,Chechen,23
+ch,Chamorro,24
+co,Corsican,25
+cr,Cree,26
+cs,Czech,27
+cu,"Old Church Slavonic, Church Slavic, Church Slavonic, Old Bulgarian, Old Slavonic",28
+cv,Chuvash,29
+cy,Welsh,30
+da,Danish,31
+de,German,32
+dv,Divehi; Dhivehi; Maldivian;,33
+ee,Ewe,34
+el,"Greek, Modern",35
+en,English,36
+eo,Esperanto,37
+es,Spanish; Castilian,38
+et,Estonian,39
+eu,Basque,40
+fa,Persian,41
+ff,Fula; Fulah; Pulaar; Pular,42
+fi,Finnish,43
+fj,Fijian,44
+fo,Faroese,45
+fr,French,46
+fy,Western Frisian,47
+ga,Irish,48
+gd,Scottish Gaelic; Gaelic,49
+gl,Galician,50
+gn,Guaraní,51
+gu,Gujarati,52
+gv,Manx,53
+ha,Hausa,54
+he,Hebrew (modern),55
+hi,Hindi,56
+ho,Hiri Motu,57
+hr,Croatian,58
+ht,Haitian; Haitian Creole,59
+hu,Hungarian,60
+hy,Armenian,61
+hz,Herero,62
+ia,Interlingua,63
+id,Indonesian,64
+ie,Interlingue,65
+ig,Igbo,66
+ii,Nuosu,67
+ik,Inupiaq,68
+io,Ido,69
+is,Icelandic,70
+it,Italian,71
+iu,Inuktitut,72
+ja,Japanese,73
+jv,Javanese,74
+ka,Georgian,75
+kg,Kongo,76
+ki,"Kikuyu, Gikuyu",77
+kj,"Kwanyama, Kuanyama",78
+kk,Kazakh,79
+kl,"Kalaallisut, Greenlandic",80
+km,Khmer,81
+kn,Kannada,82
+ko,Korean,83
+kr,Kanuri,84
+ks,Kashmiri,85
+ku,Kurdish,86
+kv,Komi,87
+kw,Cornish,88
+ky,"Kirghiz, Kyrgyz",89
+la,Latin,90
+lb,"Luxembourgish, Letzeburgesch",91
+lg,Luganda,92
+li,"Limburgish, Limburgan, Limburger",93
+ln,Lingala,94
+lo,Lao,95
+lt,Lithuanian,96
+lu,Luba-Katanga,97
+lv,Latvian,98
+mg,Malagasy,99
+mh,Marshallese,100
+mi,Māori,101
+mk,Macedonian,102
+ml,Malayalam,103
+mn,Mongolian,104
+mr,Marathi (Marāṭhī),105
+ms,Malay,106
+mt,Maltese,107
+my,Burmese,108
+na,Nauru,109
+nb,Norwegian Bokmål,110
+nd,North Ndebele,111
+ne,Nepali,112
+ng,Ndonga,113
+nl,Dutch,114
+nn,Norwegian Nynorsk,115
+no,Norwegian,116
+nr,South Ndebele,117
+nv,"Navajo, Navaho",118
+ny,Chichewa; Chewa; Nyanja,119
+oc,Occitan,120
+oj,"Ojibwe, Ojibwa",121
+om,Oromo,122
+or,Oriya,123
+os,"Ossetian, Ossetic",124
+pa,"Panjabi, Punjabi",125
+pi,Pāli,126
+pl,Polish,127
+ps,"Pashto, Pushto",128
+pt,Portuguese,129
+qu,Quechua,130
+rm,Romansh,131
+rn,Kirundi,132
+ro,"Romanian, Moldavian, Moldovan",133
+ru,Russian,134
+rw,Kinyarwanda,135
+sa,Sanskrit (Saṁskṛta),136
+sc,Sardinian,137
+sd,Sindhi,138
+se,Northern Sami,139
+sg,Sango,140
+si,"Sinhala, Sinhalese",141
+sk,Slovak,142
+sl,Slovene,143
+sm,Samoan,144
+sn,Shona,145
+so,Somali,146
+sq,Albanian,147
+sr,Serbian,148
+ss,Swati,149
+st,Southern Sotho,150
+su,Sundanese,151
+sv,Swedish,152
+sw,Swahili,153
+ta,Tamil,154
+te,Telugu,155
+tg,Tajik,156
+th,Thai,157
+ti,Tigrinya,158
+tk,Turkmen,159
+tl,Tagalog,160
+tn,Tswana,161
+to,Tonga (Tonga Islands),162
+tr,Turkish,163
+ts,Tsonga,164
+tt,Tatar,165
+tw,Twi,166
+ty,Tahitian,167
+ug,"Uighur, Uyghur",168
+uk,Ukrainian,169
+ur,Urdu,170
+uz,Uzbek,171
+ve,Venda,172
+vi,Vietnamese,173
+vo,Volapük,174
+wa,Walloon,175
+wo,Wolof,176
+xh,Xhosa,177
+yi,Yiddish,178
+yo,Yoruba,179
+za,"Zhuang, Chuang",180
+zh,Chinese,181
