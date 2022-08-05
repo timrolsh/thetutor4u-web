@@ -1,16 +1,12 @@
 import React from "react";
-
 import Header from "./Header";
-import Footer from "./Footer";
-
-
 
 function Homepage() {
     return (
         <>
             <Header signedIn={false} />
-
-            <Footer />
+            <a href="/api/auth/login">Login</a>
+            <a href="/api/auth/login/?screen_hint=signup">Signup</a>
         </>
     );
 }

@@ -13,6 +13,7 @@
         "module": "esnext",
         "resolveJsonModule": true,
         "isolatedModules": true,
+        "strictNullChecks": false,
         "jsx": "preserve",
         "types": ["node"],
         "typeRoots": ["../node_modules/@types"]

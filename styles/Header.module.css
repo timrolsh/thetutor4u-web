@@ -10,8 +10,7 @@ equal columns using the CSS grid system*/
     right: 0;
     margin: 0;
     padding: 0;
-    position: absolute;
-    width: 100%;
+    width: 100vw;
     background-color: #c9c84c;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

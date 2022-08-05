@@ -1,6 +1,3 @@
--- set up initial database
-create database "thetutor4u-db";
-
 create schema "thetutor4u";
 
 create table thetutor4u.conversation (
@@ -9,7 +6,7 @@ create table thetutor4u.conversation (
 );
 
 create table thetutor4u."user" (
-    id integer not null primary key,
+    id text not null primary key,
     username text not null,
     first_name text not null,
     last_name text not null,
@@ -26,7 +23,7 @@ create table thetutor4u."user" (
 comment on column thetutor4u."user".status is 'The user''s online status: 0 means offline, 1 means online, 2 means busy (in an active session with another user)';
 
 create table thetutor4u.conversation_user (
-    user_id integer not null constraint fk_user references thetutor4u."user",
+    user_id text not null constraint fk_user references thetutor4u."user",
     conversation_id integer not null constraint fk_conversation references thetutor4u.conversation
 );
 
@@ -38,22 +35,22 @@ create table thetutor4u.subject (
 comment on column thetutor4u.subject.name is 'The name of the subject';
 
 create table thetutor4u.tutor (
-    user_id integer not null constraint pk_user_id unique constraint fk_user_id references thetutor4u."user"
+    user_id text not null constraint pk_user_id unique constraint fk_user_id references thetutor4u."user"
 );
 
 create table thetutor4u.subject_tutor (
     subject_id integer not null constraint fk_subject references thetutor4u.subject,
-    tutor_id integer not null constraint fk_tutor_id references thetutor4u.tutor (user_id)
+    tutor_id text not null constraint fk_tutor_id references thetutor4u.tutor (user_id)
 );
 
 create table thetutor4u.student (
-    user_id integer not null constraint pk_user_id_student unique constraint fk_user_id references thetutor4u."user"
+    user_id text not null constraint pk_user_id_student unique constraint fk_user_id references thetutor4u."user"
 );
 
 create table thetutor4u.session (
     id integer not null primary key,
-    tutor_id integer not null constraint fk_tutor_id references thetutor4u.tutor (user_id),
-    student_id integer not null constraint fk_student_id references thetutor4u.student (user_id),
+    tutor_id text not null constraint fk_tutor_id references thetutor4u.tutor (user_id),
+    student_id text not null constraint fk_student_id references thetutor4u.student (user_id),
     start_time timestamp not null,
     end_time timestamp not null,
     tutor_rate double precision not null
@@ -69,7 +66,7 @@ create table thetutor4u.language (
 
 create table thetutor4u.language_user (
     language_id integer not null constraint fk_language_id references thetutor4u.language,
-    user_id integer not null constraint fk_user_id references thetutor4u."user"
+    user_id text not null constraint fk_user_id references thetutor4u."user"
 );
 
 comment on table thetutor4u.language_user is 'multiple users can speak multiple languages';
