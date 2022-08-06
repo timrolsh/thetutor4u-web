@@ -1,6 +1,7 @@
 {
     "scripts": {
-        "dev": "nodemon server/start_server.js"
+        "dev": "nodemon server/start_server.js",
+        "start": "node server/start_server.js"
     },
     "license": "ISC",
     "dependencies": {

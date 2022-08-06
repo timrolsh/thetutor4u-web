@@ -1,7 +1,7 @@
 const db = require("./db_pool");
 
 function accountSetUp(query) {
-    return query.rows[0].accountSetUp === 1;
+    return query.rows[0].account_set_up === 1;
 }
 
 function authZero(request) {
@@ -13,6 +13,7 @@ function checkUser(request, response, page, callback) {
     if (!authZero(request) && page !== "index") {
         response.redirect("/");
     } else if (authZero(request)) {
+        // TODO put an or here that is going to negate the field if it doesn't exist and put something else
         db.query("select * from thetutor4u.user where id = $1", [request.oidc.user.sub]).then((query) => {
             // user is signed in but they do not exist in the database
             if (query.rows.length === 0) {
