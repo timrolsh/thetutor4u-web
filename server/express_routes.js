@@ -1,25 +1,24 @@
-const server = require("./express_config");
+const {server, passport} = require("./express_config");
 const rootPath = require("./root_path");
-const checkUser = require("./check_user");
+
 const db = require("./db_pool");
 
 server.get("/", (request, response) => {
-    checkUser(request, response, "index", () => {
-        response.sendFile(`${rootPath}/pages/index.html`);
-    });
+    response.sendFile(`${rootPath}/pages/index.html`);
 });
 
-server.get("/dashboard", (request, response) => {
-    checkUser(request, response, "dashboard", () => {
-        response.render("dashboard");
-    });
-});
+server.get("/success", (req, res) => res.send(userProfile));
+server.get("/error", (req, res) => res.send("error logging in"));
 
-server.get("/signup", (request, response) => {
-    checkUser(request, response, "signup", () => {
-        response.sendFile(`${rootPath}/pages/signup.html`);
-    });
-});
+server.get('/auth/google', 
+  passport.authenticate('google', { scope : ['profile', 'email'] }));
+ 
+server.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/error' }),
+  function(req, res) {
+    // Successful authentication, redirect success.
+    res.redirect('/success');
+  });
 
 /* 
 formData is an object that looks like this
