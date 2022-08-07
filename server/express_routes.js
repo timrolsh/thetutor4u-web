@@ -1,24 +1,25 @@
 const {server, passport} = require("./express_config");
 const rootPath = require("./root_path");
-
+const jwt = require("jsonwebtoken");
 const db = require("./db_pool");
 
 server.get("/", (request, response) => {
     response.sendFile(`${rootPath}/pages/index.html`);
 });
 
-server.get("/success", (req, res) => res.send(userProfile));
-server.get("/error", (req, res) => res.send("error logging in"));
+server.get("/dashboard", (req, res) => {
+    if (!req.user) {
+        res.redirect("/");
+    }
+    res.send(req.user)
+});
 
-server.get('/auth/google', 
-  passport.authenticate('google', { scope : ['profile', 'email'] }));
- 
-server.get('/auth/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/error' }),
-  function(req, res) {
+server.get("/auth/google", passport.authenticate("google"));
+
+server.get("/auth/google/callback", passport.authenticate("google", {failureRedirect: "/"}), function (req, res) {
     // Successful authentication, redirect success.
-    res.redirect('/success');
-  });
+    res.redirect("/dashboard");
+});
 
 /* 
 formData is an object that looks like this

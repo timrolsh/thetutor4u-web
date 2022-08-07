@@ -9,6 +9,7 @@ create table thetutor4u.conversation (
 
 create table thetutor4u."user" (
     id text not null primary key,
+    email text,
     username text,
     first_name text,
     last_name text,
@@ -22,8 +23,7 @@ create table thetutor4u."user" (
     -- 0 means offline, 1 means online, 2 means busy
     online_status int8 default 0 not null,
     net_income double precision default 0 not null,
-    time_account_created int8,
-    account_set_up int8 default 0 not null
+    time_account_created int8
 );
 
 create table thetutor4u.conversation_user (
