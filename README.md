@@ -32,9 +32,8 @@ Every user has a "balance". Any user can add to their balance using payment meth
 
 ### **Project Tools/Requirements**
 
--   Nextjs (server side rendering, api, static page generation, multi page web apps with react)
--   React
--   Typescript
+-   Express
+-   EJS (server side rendering, html templating)
 -   PostgeSQL (relational database, for now)
     **Node, docker, and yarn need to be manually installed. Node and docker make it possible to use all the other tools in the project**
 
@@ -49,7 +48,26 @@ Every user has a "balance". Any user can add to their balance using payment meth
 
 -   clone the repository
 -   run `yarn` with no args. The package manager will download and install all the necessary dependencies for this project and put them in the node_modules folder
--   run `yarn dev` to launch the development environment. Anytime a change is made to any file in the file system, the environment will refresh and the page will soft reload. Nextjs will log everytime it re-compiles the page to the terminal
+-   run `yarn dev` to launch the development environment. Anytime a change is made to any file in the file system, the environment will restart the server.
+
+**Enviornment Varibales**
+
+-   a .env file is needed for the application to start, create a new one and use the following fields:
+
+```
+DEV=true
+PORT=80
+PGUSER="root"
+PGHOST="localhost"
+PGDATABASE="postgres"
+PGPASSWORD="root"
+PGPORT=5432
+GOOGLE_CLIENT_ID="240249167376-5b49a6dja4hb007kamoomptlev3a2sq4.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="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"
+```
+
+-   dev set to true turns on the morgan logger which logs all requests to the server, port specifies the port the server will run on, the PG fields correspond to the data in the docker container
+-   I created a google authentication app on their google authentication console. Using mine is fine, but if you need to make your own with its own client id and secret, make one on [https://console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials) and update the enviornment variables.
 
 **Getting started with the database**
 
@@ -69,7 +87,3 @@ You can host a "development database", a database with some sample data for deve
 ### Note about NPM/Yarn
 
 This project uses Yarn as its package manager, please do not use NPM while working in the project, it will cause conflicts with dependencies and lead to problems running the code. Switching between the two package managers in the project will result in conflicts within the yarn.lock file. Please do not modify the yarn.lock file manually as well, the package manager takes care of all of that for you.
-
-### Linting/Formatting
-
-ESLint and Prettier are used for code linting, Prettier is used for code formatting and its ruled are set up in [.prettierrc.json](./.prettierrc.json). The ESLint config is set up in [.eslintrc.json](./.eslintrc.json).

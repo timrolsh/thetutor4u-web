@@ -1,95 +1,93 @@
--- set up initial database
-create database "thetutor4u-db";
+drop schema if exists thetutor4u cascade;
 
 create schema "thetutor4u";
 
 create table thetutor4u.conversation (
     id serial primary key,
-    messages_count integer default 0 not null
+    messages_count int8 default 0 not null
 );
 
 create table thetutor4u."user" (
-    id integer not null primary key,
-    username text not null,
-    first_name text not null,
-    last_name text not null,
-    dob date not null,
-    balance double precision not null,
-    profile_picture bytea not null,
-    biography text not null,
-    is_tutor boolean not null,
-    status integer default 0 not null,
-    net_income double precision not null,
-    time_account_created integer not null
+    id text not null primary key,
+    email text,
+    username text,
+    first_name text,
+    last_name text,
+    dob_month int8,
+    dob_day int8,
+    dob_year int8,
+    balance double precision default 0 not null,
+    profile_picture bytea,
+    biography text,
+    is_tutor int8 default 0 not null,
+    -- 0 means offline, 1 means online, 2 means busy
+    online_status int8 default 0 not null,
+    net_income double precision default 0 not null,
+    time_account_created int8
 );
 
-comment on column thetutor4u."user".status is 'The user''s online status: 0 means offline, 1 means online, 2 means busy (in an active session with another user)';
-
 create table thetutor4u.conversation_user (
-    user_id integer not null constraint fk_user references thetutor4u."user",
-    conversation_id integer not null constraint fk_conversation references thetutor4u.conversation
+    user_id text not null constraint fk_user references thetutor4u."user",
+    conversation_id int8 not null constraint fk_conversation references thetutor4u.conversation
 );
 
 create table thetutor4u.subject (
-    id integer not null primary key,
-    name integer not null
+    id serial not null primary key,
+    name text not null
 );
 
-comment on column thetutor4u.subject.name is 'The name of the subject';
-
 create table thetutor4u.tutor (
-    user_id integer not null constraint pk_user_id unique constraint fk_user_id references thetutor4u."user"
+    user_id text not null constraint pk_user_id unique constraint fk_user_id references thetutor4u."user"
 );
 
 create table thetutor4u.subject_tutor (
-    subject_id integer not null constraint fk_subject references thetutor4u.subject,
-    tutor_id integer not null constraint fk_tutor_id references thetutor4u.tutor (user_id)
+    subject_id int8 not null constraint fk_subject references thetutor4u.subject,
+    tutor_id text not null constraint fk_tutor_id references thetutor4u.tutor (user_id)
 );
 
 create table thetutor4u.student (
-    user_id integer not null constraint pk_user_id_student unique constraint fk_user_id references thetutor4u."user"
+    user_id text not null constraint pk_user_id_student unique constraint fk_user_id references thetutor4u."user"
 );
 
 create table thetutor4u.session (
-    id integer not null primary key,
-    tutor_id integer not null constraint fk_tutor_id references thetutor4u.tutor (user_id),
-    student_id integer not null constraint fk_student_id references thetutor4u.student (user_id),
-    start_time timestamp not null,
-    end_time timestamp not null,
+    id serial not null primary key,
+    tutor_id text not null constraint fk_tutor_id references thetutor4u.tutor (user_id),
+    student_id text not null constraint fk_student_id references thetutor4u.student (user_id),
+    start_time int8 not null,
+    end_time int8 not null,
+    -- tutor's hourly rate for session
     tutor_rate double precision not null
 );
 
-comment on column thetutor4u.session.tutor_rate is 'The tutor''s hourly rate for the session';
-
 create table thetutor4u.language (
-    id integer not null primary key,
+    id serial not null primary key,
     language_name text not null,
     language_code text not null
 );
 
 create table thetutor4u.language_user (
-    language_id integer not null constraint fk_language_id references thetutor4u.language,
-    user_id integer not null constraint fk_user_id references thetutor4u."user"
+    language_id int8 not null constraint fk_language_id references thetutor4u.language,
+    user_id text not null constraint fk_user_id references thetutor4u."user"
 );
-
-comment on table thetutor4u.language_user is 'multiple users can speak multiple languages';
 
 create table thetutor4u.message (
-    conversation_id integer not null constraint fk_message_conversation references thetutor4u.conversation,
-    text integer not null,
-    time_sent integer not null,
-    received boolean not null,
-    time_received integer,
-    message_number integer not null
+    conversation_id int8 not null constraint fk_message_conversation references thetutor4u.conversation,
+    text int8 not null,
+    time_sent int8 not null,
+    received int8 not null,
+    time_received int8,
+    message_number int8 not null
 );
 
-comment on column thetutor4u.message.text is 'the message text';
+-- test table for server to query
+create table thetutor4u.test (online int8);
 
-comment on column thetutor4u.message.received is 'whether the message was reviewed or not';
+insert into
+    thetutor4u.test (online)
+values
+    (1);
 
-comment on column thetutor4u.message.message_number is 'the nth message sent in the conversation. ';
-
--- populate the language table
+-- populate the language table with all languages
 insert into
     thetutor4u.language (id, language_name, language_code)
 values
