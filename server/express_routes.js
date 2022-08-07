@@ -1,6 +1,5 @@
 const {server, passport} = require("./express_config");
 const rootPath = require("./root_path");
-const jwt = require("jsonwebtoken");
 const db = require("./db_pool");
 
 server.get("/", (request, response) => {

@@ -2,12 +2,30 @@ const express = require("express");
 const server = express();
 const session = require("express-session");
 const db = require("./db_pool");
-
 const crypto = require("crypto");
 const passport = require("passport");
 
 // load variables from .env
 require("dotenv").config();
+// check that all env variables are there
+if (
+    !(
+        process.env.DEV &&
+        process.env.PORT &&
+        process.env.PGUSER &&
+        process.env.PGHOST &&
+        process.env.PGDATABASE &&
+        process.env.PGPASSWORD &&
+        process.env.PGPORT &&
+        process.env.GOOGLE_CLIENT_ID &&
+        process.env.GOOGLE_CLIENT_SECRET
+    )
+) {
+    console.log(
+        "Not all enviornment variables have been properly declared. Create a .env file and copy from the readme. "
+    );
+    process.exit();
+}
 // root path of this project
 const rootPath = require("./root_path");
 
@@ -48,13 +66,12 @@ passport.deserializeUser(function (obj, cb) {
 });
 
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
-const GOOGLE_CLIENT_ID = "240249167376-5b49a6dja4hb007kamoomptlev3a2sq4.apps.googleusercontent.com";
-const GOOGLE_CLIENT_SECRET = "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";
+
 passport.use(
     new GoogleStrategy(
         {
-            clientID: GOOGLE_CLIENT_ID,
-            clientSecret: GOOGLE_CLIENT_SECRET,
+            clientID: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             callbackURL: "http://localhost/auth/google/callback",
             scope: ["profile", "email", "openid"]
         },

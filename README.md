@@ -50,6 +50,9 @@ Every user has a "balance". Any user can add to their balance using payment meth
 -   run `yarn` with no args. The package manager will download and install all the necessary dependencies for this project and put them in the node_modules folder
 -   run `yarn dev` to launch the development environment. Anytime a change is made to any file in the file system, the environment will restart the server. 
 
+**Enviornment Varibales**
+- a .env file is needed for the application to start
+
 **Getting started with the database**
 
 You can host a "development database", a database with some sample data for development purposes. Data changed inside of here will not affect the actual database.
