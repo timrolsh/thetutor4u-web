@@ -48,10 +48,26 @@ Every user has a "balance". Any user can add to their balance using payment meth
 
 -   clone the repository
 -   run `yarn` with no args. The package manager will download and install all the necessary dependencies for this project and put them in the node_modules folder
--   run `yarn dev` to launch the development environment. Anytime a change is made to any file in the file system, the environment will restart the server. 
+-   run `yarn dev` to launch the development environment. Anytime a change is made to any file in the file system, the environment will restart the server.
 
 **Enviornment Varibales**
-- a .env file is needed for the application to start
+
+-   a .env file is needed for the application to start, create a new one and use the following fields:
+
+```
+DEV=true
+PORT=80
+PGUSER="root"
+PGHOST="localhost"
+PGDATABASE="postgres"
+PGPASSWORD="root"
+PGPORT=5432
+GOOGLE_CLIENT_ID="240249167376-5b49a6dja4hb007kamoomptlev3a2sq4.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="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"
+```
+
+-   dev set to true turns on the morgan logger which logs all requests to the server, port specifies the port the server will run on, the PG fields correspond to the data in the docker container
+-   I created a google authentication app on their google authentication console. Using mine is fine, but if you need to make your own with its own client id and secret, make one on [https://console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials) and update the enviornment variables.
 
 **Getting started with the database**
 
