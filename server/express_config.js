@@ -1,7 +1,7 @@
 const express = require("express");
 const server = express();
-const db = require("./db_pool");
 const cookieParser = require("cookie-parser");
+
 server.use(cookieParser());
 
 // load variables from .env

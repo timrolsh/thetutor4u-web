@@ -1,91 +1,56 @@
 const server = require("./express_config");
 const rootPath = require("./root_path");
 const db = require("./db_pool");
-const Client = require("google-auth-library").OAuth2Client;
-const googleClient = new Client(process.env.CLIENT_ID);
 const crypto = require("crypto");
-const atob = require("atob");
+const {getUser, googleClient} = require("./user_authentication");
+const {appendFile} = require("fs");
 
-function unixSeconds() {
-    return parseInt(Date.now() / 1000);
-}
-
-// callbacks to a user json
-function getUser(request, response, callback) {
-    if (request.cookies.token) {
-        const user = JSON.parse(atob(request.cookies.token.split(".")[1]));
-        // if token has not expired yet
-        if (validTimeToken(user)) {
-            // if authenticator provider is google
-            if (user.iss === "https://accounts.google.com") {
-                googleClient
-                    .verifyIdToken({
-                        idToken: request.cookies.token,
-                        audience: process.env.GOOGLE_CLIENT_ID
-                    })
-                    .then((response) => {
-                        callback(response.getPayload());
-                    });
-            } else {
-                console.log("identity provider is not google");
-                callback(user);
-            }
-        }
-        // otherwise token is expired,
-        else {
-            response.clearCookie("token");
-            response.redirect("/");
-        }
-    } else {
-        callback(false);
-    }
-}
-
-function validTimeToken(userData) {
-    return userData === true || unixSeconds() < parseInt(userData.exp);
-}
-
-// home page: if user is logged in, bring them to dashboard
+// home page: if user is logged in, bring them to dashboard, otherwise, render the dashboard
 server.get("/", (request, response) => {
     getUser(request, response, (user) => {
+        // user does not exist, render home page
         if (user === false) {
             response.sendFile(`${rootPath}/pages/index.html`);
-            response.statusCode = 200;
-        } else {
+        }
+        // user exists, go to dashboard
+        else {
             response.redirect("/dashboard");
         }
     });
 });
-// dashboard page: if user is not logged in, bring them to home page where they can choose how to log in
+// dashboard page: if user is not logged in, bring them to home page
 server.get("/dashboard", (request, response) => {
     getUser(request, response, (user) => {
+        // user is not logged in, go home
         if (user === false) {
             response.redirect("/");
-        } else {
-            response.render("dashboard");
-            response.statusCode = 200;
+        }
+        // user is loggedd in, render dashboard
+        else {
+            response.render("dashboard", user);
         }
     });
 });
 
 server.get("/settings", (request, response) => {
     getUser(request, response, (user) => {
+        // user is not logged in, go home
         if (user === false) {
             response.redirect("/");
-        } else {
-            response.render("settings");
-            response.statusCode = 200;
+        }
+        // user is loggedd in, render settings page
+        else {
+            response.render("settings", user);
         }
     });
 });
 
-server.get("/me", (request, response) => {
+server.get("/auth/me", (request, response) => {
     getUser(request, response, (user) => {
         if (user === false) {
             response.redirect("/");
         } else {
             response.send(user);
-            response.statusCode = 200;
         }
     });
 });
@@ -129,4 +94,6 @@ server.post("/auth/google/callback", (request, response) => {
         });
 });
 
+server.get("/auth/login");
+server.get("/auth/signup");
 module.exports = server;
