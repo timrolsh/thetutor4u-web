@@ -7,7 +7,32 @@
         <title>TheTutor4U</title>
     </head>
     <body>
-        <a href="/auth/google"> Sign In with Google</a>
-        <a href = "/dashboard"> Your dashboard</a>
+        <!-- google sign in button, can be customized with the code generator on their website https://developers.google.com/identity/gsi/web/tools/configurator -->
+        <div
+            id="g_id_onload"
+            data-client_id="240249167376-5b49a6dja4hb007kamoomptlev3a2sq4.apps.googleusercontent.com"
+            data-context="signin"
+            data-ux_mode="redirect"
+            data-login_uri="/auth/google/callback"
+            data-auto_prompt="false"
+        ></div>
+
+        <div
+            class="g_id_signin"
+            data-type="standard"
+            data-shape="rectangular"
+            data-theme="filled_blue"
+            data-text="signin_with"
+            data-size="large"
+            data-logo_alignment="left"
+        ></div>
+        <a href="/about">About Us</a>
+
+
+
+        <a href = "/auth/signup">Sign up with email and password</a>
+        <a href = "/auth/login">Log in with email and password</a>
+        <!-- google sign in button script -->
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
     </body>
 </html>
