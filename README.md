@@ -81,7 +81,7 @@ You can host a "development database", a database with some sample data for deve
 
 -   Launch the image and expose it to the host computer on the postgres default post, 5432, with the following command: `docker run --name thetutor4u-db -d -p 5432:5432 thetutor4u-db-image`
 
--   Populate the new empty database with the data schema and the sample data by running the following command: `docker exec thetutor4u-db psql -f /script/init_db.sql`
+-   Populate the new empty database with the data schema and the sample data by running the following command: `docker exec thetutor4u-db psql -d postgres -f /script/init_db.sql;`
 -   Note: If changes are made to the [db/init_db.sql](db/init_db.sql) file, the container and image must be deleted. This can be done with the Docker Desktop app.
 
 ### Note about NPM/Yarn
