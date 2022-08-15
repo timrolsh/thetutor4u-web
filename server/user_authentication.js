@@ -26,8 +26,13 @@ function getUser(request, response, callback) {
                         idToken: request.cookies.token,
                         audience: process.env.GOOGLE_CLIENT_ID
                     })
-                    .then((response) => {
-                        callback(response.getPayload());
+                    .then((token) => {
+                        callback(token.getPayload());
+                    })
+                    .catch(() => {
+                        // token is expried/couldn't be verified by google
+
+                        callback(false);
                     });
             } else {
                 console.log("identity provider is not google");
@@ -37,7 +42,7 @@ function getUser(request, response, callback) {
         // otherwise token is expired,
         else {
             response.clearCookie("token");
-            callback(false)
+            callback(false);
         }
         // otherwise token cookie does not exist
     } else {

@@ -79,14 +79,6 @@ create table thetutor4u.message (
     message_number int8 not null
 );
 
--- test table for server to query
-create table thetutor4u.test (online int8);
-
-insert into
-    thetutor4u.test (online)
-values
-    (1);
-
 -- populate the language table with all languages
 insert into
     thetutor4u.language (id, language_name, language_code)
