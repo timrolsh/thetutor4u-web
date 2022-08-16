@@ -2,10 +2,11 @@ const server = require("./express_config");
 const rootPath = require("./root_path");
 const db = require("./db_pool");
 const crypto = require("crypto");
-const {getUser, googleClient} = require("./user_authentication");
-const {appendFile} = require("fs");
+const {getUser, googleClient, getFullUserInfo} = require("./user_authentication");
 
-// home page: if user is logged in, bring them to dashboard, otherwise, render the dashboard
+/* 
+home page: if user is logged in, bring them to dashboard, otherwise, render the dashboard
+*/
 server.get("/", (request, response) => {
     getUser(request, response, (user) => {
         // user does not exist, render home page
@@ -18,7 +19,10 @@ server.get("/", (request, response) => {
         }
     });
 });
-// dashboard page: if user is not logged in, bring them to home page
+
+/*
+dashboard page: if user is not logged in, bring them to home page
+*/
 server.get("/dashboard", (request, response) => {
     getUser(request, response, (user) => {
         // user is not logged in, go home
@@ -32,6 +36,9 @@ server.get("/dashboard", (request, response) => {
     });
 });
 
+/*
+settings page: if user is not logged in, bring them to home page
+*/
 server.get("/settings", (request, response) => {
     getUser(request, response, (user) => {
         // user is not logged in, go home
@@ -40,27 +47,34 @@ server.get("/settings", (request, response) => {
         }
         // user is loggedd in, render settings page
         else {
-            response.render("settings", user);
-        }
-    });
-});
-
-server.get("/auth/me", (request, response) => {
-    getUser(request, response, (user) => {
-        if (user === false) {
-            response.redirect("/");
-        } else {
-            response.send(user);
+            getFullUserInfo(user).then((userInfo) => {
+                response.render("settings", userInfo);
+            });
         }
     });
 });
 
 /*
-Authentication routes
+route that displays user info: for development purposes only and will not be active during production
 */
+if (process.env.DEV === "true") {
+    server.get("/auth/me", (request, response) => {
+        getUser(request, response, (user) => {
+            if (user === false) {
+                response.redirect("/");
+            } else {
+                getFullUserInfo(user).then((userInfo) => {
+                    response.send(userInfo);
+                });
+            }
+        });
+    });
+}
 
-/* google authentication callback route, google posts back here after it is logged in, maybe find a better way of 
-doing it as every time the server is restarted the sessions are lost */
+/*
+google authentication callback route, google posts back here after it is logged in with jwt, we store that jwt in 
+browser cookies and validate JWT on every request
+*/
 server.post("/auth/google/callback", (request, response) => {
     response.clearCookie("token");
     googleClient
@@ -76,12 +90,21 @@ server.post("/auth/google/callback", (request, response) => {
                 // if user does not exist in the database, add a new entry for them
                 if (dbResponse.rows.length === 0) {
                     console.log(
-                        `new user ${user.name}, has been authenticated, but they are not found in database. Inserting new user into database.`
+                        `new user ${user.name}, has been authenticated, but they are not found in database. ` +
+                            `Inserting new user into database.`
                     );
                     db.query(
                         "insert into thetutor4u.user (id, email, username, first_name, last_name, " +
-                            "time_account_created) values ($1, $2, $3, $4, $5, $6);",
-                        [user.sub, user.email, crypto.randomUUID(), user.given_name, user.family_name, Date.now()]
+                            "time_account_created, iss) values ($1, $2, $3, $4, $5, $6, $7);",
+                        [
+                            user.sub,
+                            user.email,
+                            crypto.randomUUID(),
+                            user.given_name,
+                            user.family_name,
+                            parseInt(Date.now() / 1000),
+                            user.iss
+                        ]
                     ).then(() => {
                         console.log(`inserted new user ${user.name}`);
                         return;
@@ -94,6 +117,4 @@ server.post("/auth/google/callback", (request, response) => {
         });
 });
 
-server.get("/auth/login");
-server.get("/auth/signup");
 module.exports = server;

@@ -1,13 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>TheTutor4U - Settings</title>
-    </head>
-    <body>
-        <div>Settings</div>
-        
-    </body>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TheTutor4U - Settings</title>
+</head>
+<body>
+    <div>Settings</div>
+    <% if (dbInfo.dob===null) {%>
+        <div>Important: You have not yet filled out your date of birth.</div>
+        <% } %>
+            <div>Username</div>
+            <input type="text" placeholder="<%=dbInfo.username %>" id="username_field" />
+            <div>First Name</div>
+            <input type="text" placeholder="<%=dbInfo.first_name %>" id="first_name_field" />
+            <div>Last Name</div>
+            <input type="text" placeholder="<%=dbInfo.last_name %>" id="last_name_field" />
+            <div>Email</div>
+            <input type="email" placeholder="<%=dbInfo.email %>" id="email_field" />
+            <div>Date of Birth</div>
+            <% if (dbInfo.dob===null) {%>
+                <input dob_exists="false" id="dob_field" type="date" />
+            <% } else {%> <input id="dob_field" dob_exists="true" type=date" value="<%= dbInfo.dob %>">
+            <% }%>
+            <% if (authProviderInfo.iss === "email") { %>
+                <div>Password Settings</div>
+                <input type="password" placeholder="Old Password" id="password_old_field" />
+                <input type="password" placeholder="New Password" id="password_new_field" />
+            <% } %>
+            <div>Save Settings Button</div>
+            <button id="save_button" type="button">Save Settings</button>
+            <div id="updating_settings" style="visibility: hidden">Updating Settings</div>
+            <script src="/js/settings.js"></script>
+</body>
+
 </html>

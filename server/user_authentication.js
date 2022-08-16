@@ -1,6 +1,7 @@
 const {OAuth2Client} = require("google-auth-library");
 const googleClient = new OAuth2Client(process.env.CLIENT_ID);
 const atob = require("atob");
+const db = require("./db_pool");
 
 /*
 Rreturns true if the token has not expired yet, and return false if the token has expired and is no longer valid. 
@@ -49,9 +50,18 @@ function getUser(request, response, callback) {
         callback(false);
     }
 }
+// returns a promise that resolves to the user info
+function getFullUserInfo(user) {
+    return new Promise((resolve, reject) => {
+        db.query("select * from thetutor4u.user where id = $1;", [user.sub]).then((dbResponse) => {
+            resolve({authProviderInfo: user, dbInfo: dbResponse.rows[0]});
+        });
+    });
+}
 
 module.exports = {
     getUser: getUser,
     validTimeToken: validTimeToken,
-    googleClient: googleClient
+    googleClient: googleClient,
+    getFullUserInfo: getFullUserInfo
 };
