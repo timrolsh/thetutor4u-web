@@ -7,13 +7,13 @@
     <body>
         <div>Welcome, <%=dbInfo.first_name%> <%= dbInfo.last_name %></div>
         <button id="logout-button">Logout</button>
-        <a href = "/">Home</a>
+        <a href="/">Home</a>
         <a href="/calendar">Calendar</a>
         <a href="/tutor">Tutor Dashboard</a>
         <a href="/student">Student Dashboard</a>
         <div>Settings</div>
         <% if (dbInfo.dob===null) {%>
-        <div>Important: You have not yet filled out your date of birth.</div>
+            <div>Important: You have not yet filled out your date of birth.</div>
         <% } %>
         <div>Username</div>
         <input type="text" placeholder="<%=dbInfo.username %>" id="username_field" />
@@ -25,23 +25,23 @@
         <input type="email" placeholder="<%=dbInfo.email %>" id="email_field" />
         <div>Date of Birth</div>
         <% if (dbInfo.dob===null) {%>
-        <input dob_exists="false" id="dob_field" type="date" />
-        <% } else {%> <input id="dob_field" dob_exists="true" type=date" value="<%= dbInfo.dob %>"> 
-        <% }if (authProviderInfo.iss === "email") { %>
-        <div>Password Settings</div>
-        <input type="password" placeholder="Old Password" id="password_old_field" />
-        <input type="password" placeholder="New Password" id="password_new_field" />
-        <% } %>
-        <% if (dbInfo.is_tutor === true) { %> 
-        <div>Tutor Biography</div>
-        <% if (dbTutorInfo.biography !== null) {%>
-        <input type = "text" value = <%= dbTutorInfo.biography  %> >
-        <% } else { %> 
-        <input type = "text" id = "tutor_bio_field" >
-        <% }} %> 
+            <input dob_exists="false" id="dob_field" type="date" />
+        <% } else {%> 
+            <input id="dob_field" dob_exists="true" type=date" value="<%= dbInfo.dob %>" /> 
+        <% } if (authProviderInfo.iss === "email") { %>
+            <div>Password Settings</div>
+            <input type="password" placeholder="Old Password" id="password_old_field" />
+            <input type="password" placeholder="New Password" id="password_new_field" />
+        <% } if (dbInfo.is_tutor === true) { %>
+            <div>Tutor Biography</div>
+            <% if (dbTutorInfo.biography !== null) {%>
+                <input id="tutor_bio_field" type="text" value="<%=dbTutorInfo.biography %>" /> 
+            <% } else { %>
+                <input type="text" id="tutor_bio_field" />
+        <% }} %>
         <button id="save_button" type="button">Save All Settings</button>
         <div id="updating_settings" style="visibility: hidden">Updating Settings</div>
         <script src="/js/settings.js"></script>
-        <script src = "/js/logout-button.js"></script>
+        <script src="/js/logout-button.js"></script>
     </body>
 </html>
