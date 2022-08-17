@@ -1,6 +1,6 @@
 const server = require("./express_page_routes");
 const db = require("./db_pool");
-const {getUser} = require("./user_authentication");
+const {getUser, getFullUserInfo} = require("./user_authentication");
 
 /*
 route that checks if a username is valid or not, meaning whether it exists or not. Responds "valid" or "invalid" with 
@@ -69,15 +69,60 @@ server.post("/api/update-settings", (request, response) => {
                 ]
             )
                 .then(() => {
-                    response.statusCode = 200;
-                    // if username does not exist
-                    response.send("done");
+                    if (request.body.tutor_bio !== undefined) {
+                        db.query("update thetutor4u.tutor set biography = $1 where user_id = $2", [
+                            request.body.tutor_bio,
+                            user.sub
+                        ])
+                            .then(() => {
+                                response.statusCode = 200;
+                                response.send("done");
+                            })
+                            .catch(() => {
+                                response.statusCode = 500;
+                                response.send("database issue");
+                            });
+                    } else {
+                        response.statusCode = 200;
+                        response.send("done");
+                    }
                 })
                 .catch(() => {
                     response.statusCode = 500;
                     response.send("database issue");
                 });
         }
+    });
+});
+
+/*
+Temporary sign up route for tutors, will be used only for demo purposes
+*/
+server.post("/api/register-tutor", (request, response) => {
+    getUser(request, response, (user) => {
+        // user is not logged in, go home
+        if (user === false) {
+            response.redirect("/");
+        }
+        // user is logged in, register them as a tutor and bring them back to their tutor dashboard
+        getFullUserInfo(user).then((userInfo) => {
+            // user is already counted as a tutor in the database
+            if (userInfo.is_tutor === true) {
+                response.redirect("/tutor");
+            } else {
+                db.query("insert into thetutor4u.tutor (user_id) values ($1);", [userInfo.dbInfo.id])
+                    .then(() => {
+                        console.log(
+                            `successfully registered new tutor ${userInfo.dbInfo.first_name} ` +
+                                userInfo.dbInfo.last_name
+                        );
+                        response.redirect("/tutor");
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
+            }
+        });
     });
 });
 

@@ -12,6 +12,7 @@ const dob = document.getElementById("dob_field");
 const button = document.getElementById("save_button");
 const illegalChars = "1234567890_+=[]{}:;|<,>.?/";
 const updating = document.getElementById("updating_settings");
+const tutor_bio = document.getElementById("tutor_bio_field");
 
 function isSignedInWithEmail() {
     return email !== null;
@@ -69,7 +70,10 @@ the settings
 function formDataValid() {
     return new Promise((resolve, reject) => {
         if (!(validName(first_name.value) && validName(last_name.value) && validDob())) {
-            reject(`You have entered either a first name or last name using illegal characacters (${illegalChars})`);
+            reject(
+                `You have entered either a first name or last name using illegal characacters (${illegalChars}), ` +
+                    `or you have not specified your DOB. `
+            );
         }
         // if username is changing, check that new username provided is valid
         if (username.value === "" || username.value === username.placeholder) {
@@ -101,6 +105,10 @@ button.addEventListener("click", () => {
                 email: email.value,
                 dob: dob.value
             };
+            // if user is a tutor, add their bio to the payload
+            if (tutor_bio !== null) {
+                bodyPayload["tutor_bio"] = tutor_bio.value;
+            }
 
             if (bodyPayload["username"] === "") {
                 bodyPayload["username"] = username.placeholder;

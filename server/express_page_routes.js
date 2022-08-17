@@ -5,7 +5,7 @@ const crypto = require("crypto");
 const {getUser, googleClient, getFullUserInfo} = require("./user_authentication");
 
 /* 
-home page: if user is logged in, bring them to dashboard, otherwise, render the dashboard
+home page: if user is logged in, bring them to dashboard, otherwise, render the home page
 */
 server.get("/", (request, response) => {
     getUser(request, response, (user) => {
@@ -13,25 +13,11 @@ server.get("/", (request, response) => {
         if (user === false) {
             response.sendFile(`${rootPath}/pages/index.html`);
         }
-        // user exists, go to dashboard
+        // user is signed in, render signed in home page
         else {
-            response.redirect("/dashboard");
-        }
-    });
-});
-
-/*
-dashboard page: if user is not logged in, bring them to home page
-*/
-server.get("/dashboard", (request, response) => {
-    getUser(request, response, (user) => {
-        // user is not logged in, go home
-        if (user === false) {
-            response.redirect("/");
-        }
-        // user is loggedd in, render dashboard
-        else {
-            response.render("dashboard", user);
+            getFullUserInfo(user).then((userInfo) => {
+                response.render("index-signed-in", userInfo);
+            });
         }
     });
 });
@@ -49,6 +35,67 @@ server.get("/settings", (request, response) => {
         else {
             getFullUserInfo(user).then((userInfo) => {
                 response.render("settings", userInfo);
+            });
+        }
+    });
+});
+
+/*
+About page, looks the same for everyone no matter if they are logged in or not
+ */
+server.get("/about", (request, response) => {
+    response.sendFile(`${rootPath}/pages/about.html`);
+});
+
+/*
+Student dashboard page: if user is not logged in, bring them to home page
+*/
+server.get("/student", (request, response) => {
+    getUser(request, response, (user) => {
+        // user is not logged in, go home
+        if (user === false) {
+            response.redirect("/");
+        }
+        // user is loggedd in, render student dashboard page
+        else {
+            getFullUserInfo(user).then((userInfo) => {
+                response.render("student", userInfo);
+            });
+        }
+    });
+});
+
+/*
+Tutor dashboard page: if user is not logged in, bring them to home page
+*/
+server.get("/tutor", (request, response) => {
+    getUser(request, response, (user) => {
+        // user is not logged in, go home
+        if (user === false) {
+            response.redirect("/");
+        }
+        // user is loggedd in, render tutor dashboard page
+        else {
+            getFullUserInfo(user).then((userInfo) => {
+                response.render("tutor", userInfo);
+            });
+        }
+    });
+});
+
+/*
+Calendar page: if user is not logged in, bring them to home page
+*/
+server.get("/calendar", (request, response) => {
+    getUser(request, response, (user) => {
+        // user is not logged in, go home
+        if (user === false) {
+            response.redirect("/");
+        }
+        // user is loggedd in, render student dashboard page
+        else {
+            getFullUserInfo(user).then((userInfo) => {
+                response.render("calendar", userInfo);
             });
         }
     });
@@ -112,7 +159,7 @@ server.post("/auth/google/callback", (request, response) => {
                 } else {
                     console.log(`found user ${user.name}`);
                 }
-                response.redirect("/dashboard");
+                response.redirect("/");
             });
         });
 });

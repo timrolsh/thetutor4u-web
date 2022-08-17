@@ -24,8 +24,6 @@ create table thetutor4u."user" (
     dob text,
     -- user's profile picture file
     profile_picture bytea,
-    -- user's bio
-    biography text,
     -- 0 means offline, 1 means online, 2 means busy
     online_status int8 default 0 not null,
     -- unix timestamp (seconds, Date.now() / 1000 in JS) for when account was created
@@ -45,7 +43,9 @@ create table thetutor4u.subject (
 create table thetutor4u.tutor (
     user_id text not null constraint pk_user_id unique constraint fk_user_id references thetutor4u."user",
     -- the tutor's balance
-    balance double precision default 0 not null
+    balance double precision default 0 not null,
+    -- tutor's bio
+    biography text
 );
 
 create table thetutor4u.subject_tutor (

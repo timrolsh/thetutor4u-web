@@ -53,9 +53,32 @@ function getUser(request, response, callback) {
 // returns a promise that resolves to the user info
 function getFullUserInfo(user) {
     return new Promise((resolve, reject) => {
-        db.query("select * from thetutor4u.user where id = $1;", [user.sub]).then((dbResponse) => {
-            resolve({authProviderInfo: user, dbInfo: dbResponse.rows[0]});
-        });
+        db.query("select * from thetutor4u.user where id = $1;", [user.sub])
+            .then((dbResponse) => {
+                db.query("select * from thetutor4u.tutor where user_id = $1;", [user.sub])
+                    .then((tutorResponse) => {
+                        // user is not a tutor
+                        if (tutorResponse.rows.length === 0) {
+                            dbResponse["rows"][0]["is_tutor"] = false;
+                            resolve({authProviderInfo: user, dbInfo: dbResponse.rows[0]});
+                        }
+                        // user is a tutor
+                        else {
+                            dbResponse["rows"][0]["is_tutor"] = true;
+                            resolve({
+                                authProviderInfo: user,
+                                dbInfo: dbResponse.rows[0],
+                                dbTutorInfo: tutorResponse.rows[0]
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        reject(error);
+                    });
+            })
+            .catch((error) => {
+                reject(error);
+            });
     });
 }
 

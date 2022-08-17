@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>TheTutor4U - Tutor Dashboard</title>
+    </head>
+    <body>
+        <div>Welcome, <%=dbInfo.first_name%> <%= dbInfo.last_name %></div>
+        <button id="logout-button">Logout</button>
+        <a href="/">Home</a>
+        <a href="/calendar">Calendar</a>
+        <a href="/student">Student Dashboard</a>
+        <a href="/settings">Settings</a>
+        <script src="/js/logout-button.js"></script>
+        <div>Tutor Dashboard</div>
+        <!-- if user is not a tutor, offer them to sign up -->
+        <% if (dbInfo.is_tutor === false) { %>
+        <div>You are not a tutor, sign up here</div>
+        <form method="post" action="/api/register-tutor">
+            <button type="submit">Become a tutor (instant accept for now)</button>
+        </form>
+        <% } else { if (dbTutorInfo.biography === null) {%>
+        <div>Important: You have not created a bio yet. Please create a bio on the settings page</div>
+        <% } %>
+        <div>You are a registered tutor, pick a subject to teach and teach now.</div>
+        <form method="post" action="/find-students">
+            <div>Language</div>
+            <select name="language">
+                <option value="demo">Demo</option>
+            </select>
+            <div>Subject</div>
+            <select name="subject">
+                <option value="demo">Demo</option>
+            </select>
+            <button type="submit">Find Students</button>
+        </form>
+        <% } %>
+    </body>
+</html>
