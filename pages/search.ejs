@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+    </head>
+
+    <body>
+        <input type = "hidden" id = "language" value="<%=language %> " />
+        <input type = "hidden" id = "subject" value="<%=subject %> " />
+        <div>Welcome, <%=dbInfo.first_name%> <%= dbInfo.last_name %></div>
+        <button id="logout-button">Logout</button>
+        <a href="/">Home</a>
+        <a href="/settings">Settings</a>
+        <a href="/calendar">Calendar</a>
+        <a href="/tutor">Tutor Dashboard</a>
+        <a href="/student">Student Dashboard</a>
+        <% if (context === "student") { %>
+        <div>
+            You, as a student are looking for tutors that teach the <%=subject %> subject in the <%=language %>
+            language.
+        </div>
+        <% } else { %>
+        <div>
+            You, as a tutor are looking to tutor students in the <%=subject %> subject and in the <%=language %>
+            language.
+        </div>
+        <% } %>
+
+        <script src="/js/heartbeat.js"></script>
+        <% if (context === "student") { %>
+        <script src="/js/search-student.js"></script>
+        <% } else { %>
+        <script src="/js/search-tutor.js"></script>
+        <% } %>
+    </body>
+</html>

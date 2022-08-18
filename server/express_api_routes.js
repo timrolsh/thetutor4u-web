@@ -126,4 +126,29 @@ server.post("/api/register-tutor", (request, response) => {
     });
 });
 
+/*
+Heartbeat route, client sends requests here and then database gets updated with current time as last_online in unix 
+time seconds. If someone is offline for more than 3 seconds, they are now considered offline
+*/
+server.get("/api/heartbeat", (request, response) => {
+    getUser(request, response, (user) => {
+        if (user === false) {
+            response.statusCode = 400;
+            response.send("Log in to access this endpoint. ");
+        } else {
+            db.query("update thetutor4u.user set last_online = $1 where id = $2;", [
+                parseInt(Date.now() / 1000),
+                user.sub
+            ])
+                .catch(() => {
+                    response.statusCode = 500;
+                    response.send("DB Error");
+                })
+                .then(() => {
+                    response.statusCode = 200;
+                    response.send("OK");
+                });
+        }
+    });
+});
 module.exports = server;

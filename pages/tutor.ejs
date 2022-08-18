@@ -23,7 +23,8 @@
         <div>Important: You have not created a bio yet. Please create a bio on the settings page</div>
         <% } %>
         <div>You are a registered tutor, pick a subject to teach and teach now.</div>
-        <form method="post" action="/find-students">
+        <form method="post" action="/search">
+            <input type = "hidden" name = "context" value="tutor" />
             <div>Language</div>
             <select name="language">
                 <option value="demo">Demo</option>

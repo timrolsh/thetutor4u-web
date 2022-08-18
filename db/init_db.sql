@@ -27,7 +27,9 @@ create table thetutor4u."user" (
     -- 0 means offline, 1 means online, 2 means busy
     online_status int8 default 0 not null,
     -- unix timestamp (seconds, Date.now() / 1000 in JS) for when account was created
-    time_account_created int8
+    time_account_created int8,
+    -- user's unix timestand in seconds of when the last time their account was online
+    last_online int8 default 0 not null
 );
 
 create table thetutor4u.conversation_user (

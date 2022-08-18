@@ -14,7 +14,8 @@
         <script src = "/js/logout-button.js"></script>
         <div>Student Dashboard</div>
         <div>Begin an Instant Tutoring Session</div>
-        <form method="post" action="/find-tutors">
+        <form method="post" action="/search">
+            <input type = "hidden" name = "context" value="student" />
             <div>Language</div>
             <select name="language">
                 <option value="demo">Demo</option>

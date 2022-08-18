@@ -119,6 +119,36 @@ if (process.env.DEV === "true") {
 }
 
 /*
+Search page for both students and tutors to connect
+*/
+server.post("/search", (request, response) => {
+    // if not all the fields are provided or the context isn't correct, bring back to home page
+    if (
+        !(
+            request.body.context &&
+            request.body.language &&
+            request.body.subject &&
+            (request.body.context === "student" || request.body.context === "tutor")
+        )
+    ) {
+        response.redirect("/");
+    } else {
+        getUser(request, response, (user) => {
+            if (user === false) {
+                response.redirect("/");
+            } else {
+                getFullUserInfo(user).then((userInfo) => {
+                    userInfo.context = request.body.context;
+                    userInfo.subject = request.body.subject;
+                    userInfo.language = request.body.language;
+                    response.render("search", userInfo);
+                });
+            }
+        });
+    }
+});
+
+/*
 google authentication callback route, google posts back here after it is logged in with jwt, we store that jwt in 
 browser cookies and validate JWT on every request
 */
