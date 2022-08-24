@@ -35,68 +35,8 @@ server.post("/api/valid-username", (request, response) => {
 });
 
 /*
-Route for updating user settings: Updates user settings if input is valid and sends status code 200. Otherwise, sends 
-400 with error message
-*/
-server.post("/api/update-settings", (request, response) => {
-    getUser(request, response, (user) => {
-        if (
-            user === false ||
-            !(
-                request.body.username &&
-                request.body.first_name &&
-                request.body.last_name &&
-                request.body.email &&
-                request.body.dob
-            )
-        ) {
-            response.statusCode = 400;
-            response.send(
-                "You must be logged in to access this api endpoint. You must also provide the following fields: " +
-                    "username, first_name, last_name, email, dob"
-            );
-        } else {
-            db.query(
-                "update thetutor4u.user set username = $1, first_name = $2, last_name = $3, email = $4, dob = $5" +
-                    " where id = $6;",
-                [
-                    request.body.username,
-                    request.body.first_name,
-                    request.body.last_name,
-                    request.body.email,
-                    request.body.dob,
-                    user.sub
-                ]
-            )
-                .then(() => {
-                    if (request.body.tutor_bio !== undefined) {
-                        db.query("update thetutor4u.tutor set biography = $1 where user_id = $2", [
-                            request.body.tutor_bio,
-                            user.sub
-                        ])
-                            .then(() => {
-                                response.statusCode = 200;
-                                response.send("done");
-                            })
-                            .catch(() => {
-                                response.statusCode = 500;
-                                response.send("database issue");
-                            });
-                    } else {
-                        response.statusCode = 200;
-                        response.send("done");
-                    }
-                })
-                .catch(() => {
-                    response.statusCode = 500;
-                    response.send("database issue");
-                });
-        }
-    });
-});
-
-/*
 Temporary sign up route for tutors, will be used only for demo purposes
+TODO change this to post route for /tutor
 */
 server.post("/api/register-tutor", (request, response) => {
     getUser(request, response, (user) => {
@@ -116,7 +56,18 @@ server.post("/api/register-tutor", (request, response) => {
                             `successfully registered new tutor ${userInfo.dbInfo.first_name} ` +
                                 userInfo.dbInfo.last_name
                         );
-                        response.redirect("/tutor");
+                        // for now register the tutor as being able to teach the demo subject and the demo language
+                        db.query("insert into thetutor4u.subject_tutor (tutor_id, subject_name) values ($1, $2)", [
+                            user.sub,
+                            0
+                        ])
+                            .then(() => {
+                                console.log("registered tutor for demo subject. ");
+                                response.redirect("/tutor");
+                            })
+                            .catch((error) => {
+                                console.log(error);
+                            });
                     })
                     .catch((error) => {
                         console.log(error);
@@ -147,6 +98,53 @@ server.get("/api/heartbeat", (request, response) => {
                 .then(() => {
                     response.statusCode = 200;
                     response.send("OK");
+                });
+        }
+    });
+});
+
+/*
+Will make this route work with multiple languages in the future
+*/
+server.post("/api/active-students", (request, response) => {
+    // TODO maybe make the language field an array of languages and then do an or in the sql clause
+    if (!(request.body.subject && request.body.language)) {
+        response.statusCode = 400;
+        response.send("You must provide an english language name and a english subject in order");
+    } else {
+        db.query("select username, first_name, last_name from thetutor4u.user where subject_name = $1;", [
+            request.body.subject
+        ])
+            .then(({rows}) => {
+                response.statusCode = 200;
+                response.send(rows);
+            })
+            .catch((error) => {
+                console.log(error);
+                response.statusCode = 500;
+                response.send("database error");
+            });
+    }
+});
+server.post("/api/active-tutors", (request, response) => {});
+
+server.get("/api/user-languages", (request, response) => {
+    getUser(request, response, (user) => {
+        if (user === false) {
+            response.statusCode = 400;
+            response.send("Log in to access this endpoint. ");
+        } else {
+            db.query("select language_code from thetutor4u.language_user where user_id = $1;", [user.sub])
+                .then(({rows}) => {
+                    const responseArray = [];
+                    for (let a = 0; a < rows.length; ++a) {
+                        responseArray.push(rows[a]["language_code"]);
+                    }
+                    response.statusCode = 200;
+                    response.send(JSON.stringify(responseArray));
+                })
+                .catch(() => {
+                    console.log("database error");
                 });
         }
     });

@@ -31,13 +31,87 @@ server.get("/settings", (request, response) => {
         if (user === false) {
             response.redirect("/");
         }
-        // user is loggedd in, render settings page
+        // user is logged in, render settings page
         else {
             getFullUserInfo(user).then((userInfo) => {
                 response.render("settings", userInfo);
             });
         }
     });
+});
+
+/*
+Also settings page but for when settings are saved and form is submitted
+*/
+server.post("/settings", (request, response) => {
+    if (
+        !(
+            request.body.username &&
+            request.body.first_name &&
+            request.body.last_name &&
+            request.body.email &&
+            request.body.dob &&
+            request.body.languages_spoken
+        )
+    ) {
+        response.statusCode = 400;
+        response.send("Not all data fields have been supplied");
+    } else {
+        getUser(request, response, (user) => {
+            db.query(
+                "update thetutor4u.user set username = $1, first_name = $2, last_name = $3, email = $4, dob = $5" +
+                    " where id = $6;",
+                [
+                    request.body.username,
+                    request.body.first_name,
+                    request.body.last_name,
+                    request.body.email,
+                    request.body.dob,
+                    user.sub
+                ]
+            )
+                .then(() => {
+                    // update user's languages spoken
+                    db.query("delete from thetutor4u.language_user where user_id = $1;", [user.sub])
+                        .then(() => {
+                            const languages_spoken = request.body["languages_spoken"];
+                            let valuesString = "";
+                            // if it is an array
+                            if (Array.isArray(languages_spoken)) {
+                                // with commas
+                                for (let a = 0; a < languages_spoken.length - 1; ++a) {
+                                    valuesString += `('${user.sub}', '${languages_spoken[a]}'),`;
+                                }
+                                // without comma, final one
+                                valuesString += `('${user.sub}', '${languages_spoken[languages_spoken.length - 1]}')`;
+                            } else {
+                                // one thing, its a string
+                                valuesString = `('${user.sub}', '${languages_spoken}')`;
+                            }
+                            db.query(
+                                `insert into thetutor4u.language_user (user_id, language_code) values ${valuesString};`
+                            )
+                                .then(() => {
+                                    getFullUserInfo(user).then((userInfo) => {
+                                        response.render("settings", userInfo);
+                                    });
+                                })
+                                .catch(() => {
+                                    response.statusCode = 500;
+                                    response.send("database issue");
+                                });
+                        })
+                        .catch(() => {
+                            response.statusCode = 500;
+                            response.send("database issue");
+                        });
+                })
+                .catch(() => {
+                    response.statusCode = 500;
+                    response.send("database issue");
+                });
+        });
+    }
 });
 
 /*
@@ -56,7 +130,7 @@ server.get("/student", (request, response) => {
         if (user === false) {
             response.redirect("/");
         }
-        // user is loggedd in, render student dashboard page
+        // user is logged in, render student dashboard page
         else {
             getFullUserInfo(user).then((userInfo) => {
                 response.render("student", userInfo);
@@ -74,7 +148,7 @@ server.get("/tutor", (request, response) => {
         if (user === false) {
             response.redirect("/");
         }
-        // user is loggedd in, render tutor dashboard page
+        // user is logged in, render tutor dashboard page
         else {
             getFullUserInfo(user).then((userInfo) => {
                 response.render("tutor", userInfo);
@@ -92,7 +166,7 @@ server.get("/calendar", (request, response) => {
         if (user === false) {
             response.redirect("/");
         }
-        // user is loggedd in, render student dashboard page
+        // user is logged in, render student dashboard page
         else {
             getFullUserInfo(user).then((userInfo) => {
                 response.render("calendar", userInfo);
@@ -138,6 +212,16 @@ server.post("/search", (request, response) => {
                 response.redirect("/");
             } else {
                 getFullUserInfo(user).then((userInfo) => {
+                    // student is looking for one subject, add that into their user field
+                    if (request.body.context === "student") {
+                        db.query("update thetutor4u.user set subject_name = $1 where id = $2;", [
+                            request.body.subject,
+                            user.sub
+                        ]);
+                    }
+                    // tutor is looking to teach multiple subjects, set all of the teaching_now properties to false first and then set all the teaching_now properties to true for all of the subjects that the tutor has selected to teach
+                    else {
+                    }
                     userInfo.context = request.body.context;
                     userInfo.subject = request.body.subject;
                     userInfo.language = request.body.language;
@@ -183,13 +267,19 @@ server.post("/auth/google/callback", (request, response) => {
                             user.iss
                         ]
                     ).then(() => {
-                        console.log(`inserted new user ${user.name}`);
-                        return;
+                        console.log(`Adding default spoken language for new user ${user.name} English.`);
+                        db.query("insert into thetutor4u.language_user (language_code, user_id) values ($1, $2);", [
+                            "en",
+                            user.sub
+                        ]).then(() => {
+                            console.log("Fully added new user to database, redirecting them back to home");
+                            response.redirect("/");
+                        });
                     });
                 } else {
-                    console.log(`found user ${user.name}`);
+                    console.log(`found user ${user.name} in database, not adding.`);
+                    response.redirect("/");
                 }
-                response.redirect("/");
             });
         });
 });

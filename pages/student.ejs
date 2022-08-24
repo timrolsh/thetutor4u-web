@@ -7,22 +7,21 @@
     <body>
         <div>Welcome, <%=dbInfo.first_name%> <%= dbInfo.last_name %></div>
         <button id="logout-button">Logout</button>
-        <a href = "/">Home</a>
+        <a href="/">Home</a>
         <a href="/calendar">Calendar</a>
         <a href="/tutor">Tutor Dashboard</a>
         <a href="/settings">Settings</a>
-        <script src = "/js/logout-button.js"></script>
+        <script src="/js/logout-button.js"></script>
         <div>Student Dashboard</div>
-        <div>Begin an Instant Tutoring Session</div>
+        <div>
+            Begin an Instant Tutoring Session. You will be shown tutors that are currently tutoring your subject in the
+            languages that you know. You can change the languages you know on the settings page
+        </div>
         <form method="post" action="/search">
-            <input type = "hidden" name = "context" value="student" />
-            <div>Language</div>
-            <select name="language">
-                <option value="demo">Demo</option>
-            </select>
+            <input type="hidden" name="context" value="student" />
             <div>Subject</div>
             <select name="subject">
-                <option value="demo">Demo</option>
+                <option value="demo">demo</option>
             </select>
             <button type="submit">Find Tutors</button>
         </form>

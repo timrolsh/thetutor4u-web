@@ -22,16 +22,16 @@
         <% } else { if (dbTutorInfo.biography === null) {%>
         <div>Important: You have not created a bio yet. Please create a bio on the settings page</div>
         <% } %>
-        <div>You are a registered tutor, pick a subject to teach and teach now.</div>
+        <div>
+            You are a registered tutor, pick subjects to teach and teach now. You will be matched with tutors who speak
+            the language(s) that you know. You can change languages you are comfortable with on the settings page
+        </div>
         <form method="post" action="/search">
-            <input type = "hidden" name = "context" value="tutor" />
-            <div>Language</div>
-            <select name="language">
-                <option value="demo">Demo</option>
-            </select>
-            <div>Subject</div>
-            <select name="subject">
-                <option value="demo">Demo</option>
+            <input type="hidden" name="context" value="tutor" />
+            <div>Subjects</div>
+            <!-- TODO make this a checklist form at some point -->
+            <select name="subject" mulitple = "true">
+                <option value="demo">demo</option>
             </select>
             <button type="submit">Find Students</button>
         </form>
