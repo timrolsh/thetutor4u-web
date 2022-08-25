@@ -27,16 +27,16 @@ server.post("/api/valid-username", (request, response) => {
                     response.send("invalid");
                 }
             })
-            .catch(() => {
+            .catch((error) => {
+                console.log(error);
                 response.statusCode = 500;
-                response.send("database issue");
+                response.send("database error");
             });
     }
 });
 
 /*
 Temporary sign up route for tutors, will be used only for demo purposes
-TODO change this to post route for /tutor
 */
 server.post("/api/register-tutor", (request, response) => {
     getUser(request, response, (user) => {
@@ -56,21 +56,12 @@ server.post("/api/register-tutor", (request, response) => {
                             `successfully registered new tutor ${userInfo.dbInfo.first_name} ` +
                                 userInfo.dbInfo.last_name
                         );
-                        // for now register the tutor as being able to teach the demo subject and the demo language
-                        db.query("insert into thetutor4u.subject_tutor (tutor_id, subject_name) values ($1, $2)", [
-                            user.sub,
-                            0
-                        ])
-                            .then(() => {
-                                console.log("registered tutor for demo subject. ");
-                                response.redirect("/tutor");
-                            })
-                            .catch((error) => {
-                                console.log(error);
-                            });
+                        response.redirect("/tutor");
                     })
                     .catch((error) => {
                         console.log(error);
+                        response.statusCode = 500;
+                        response.send("database error");
                     });
             }
         });
@@ -91,9 +82,10 @@ server.get("/api/heartbeat", (request, response) => {
                 parseInt(Date.now() / 1000),
                 user.sub
             ])
-                .catch(() => {
+                .catch((error) => {
+                    console.log(error);
                     response.statusCode = 500;
-                    response.send("DB Error");
+                    response.send("database error");
                 })
                 .then(() => {
                     response.statusCode = 200;
@@ -104,10 +96,9 @@ server.get("/api/heartbeat", (request, response) => {
 });
 
 /*
-Will make this route work with multiple languages in the future
+TODO add
 */
 server.post("/api/active-students", (request, response) => {
-    // TODO maybe make the language field an array of languages and then do an or in the sql clause
     if (!(request.body.subject && request.body.language)) {
         response.statusCode = 400;
         response.send("You must provide an english language name and a english subject in order");
@@ -126,27 +117,116 @@ server.post("/api/active-students", (request, response) => {
             });
     }
 });
+// TODO add
 server.post("/api/active-tutors", (request, response) => {});
 
-server.get("/api/user-languages", (request, response) => {
+/*
+Returns user info in the following JSON format:
+{
+    email: string,
+    username: string,
+    first_name: string,
+    last_name: string,
+    dob: string in html date format,
+    languages: list of language_codes,
+    is_tutor: boolean, is the user a tutor or not? If this is false, all the other fields will be null,
+    tutor_subjects: all of the subjects that the tutor is qualified to teach,
+    tutor_bio: the tutor's bio,
+
+    
+}
+*/
+server.get("/api/user-info", (request, response) => {
     getUser(request, response, (user) => {
         if (user === false) {
             response.statusCode = 400;
-            response.send("Log in to access this endpoint. ");
+            response.send("Log in to access this endpoint.");
         } else {
+            let finalObject = {
+                email: null,
+                username: null,
+                first_name: null,
+                last_name: null,
+                dob: null,
+                languages: null,
+                is_tutor: null,
+                tutor_subjects: null,
+                tutor_bio: null
+            };
+            let queryResponses = 0;
+            let promiseFailed = false;
+            function errorCallback(error) {
+                console.log(error);
+                response.statusCode = 500;
+                response.send("database error");
+                promiseFailed = true;
+                return;
+            }
+            db.query("select email, username, first_name, last_name, dob from thetutor4u.user where id = $1;", [
+                user.sub
+            ])
+                .then(({rows}) => {
+                    rows = rows[0];
+                    finalObject["email"] = rows["email"];
+                    finalObject["username"] = rows["username"];
+                    finalObject["first_name"] = rows["first_name"];
+                    finalObject["last_name"] = rows["last_name"];
+                    finalObject["dob"] = rows["dob"];
+                    ++queryResponses;
+                })
+                .catch(errorCallback);
             db.query("select language_code from thetutor4u.language_user where user_id = $1;", [user.sub])
                 .then(({rows}) => {
-                    const responseArray = [];
+                    finalObject["languages"] = [];
                     for (let a = 0; a < rows.length; ++a) {
-                        responseArray.push(rows[a]["language_code"]);
+                        finalObject["languages"].push(rows[a]["language_code"]);
                     }
-                    response.statusCode = 200;
-                    response.send(JSON.stringify(responseArray));
+                    ++queryResponses;
                 })
-                .catch(() => {
-                    console.log("database error");
-                });
+                .catch(errorCallback);
+            db.query("select biography from thetutor4u.tutor where user_id = $1;", [user.sub]).then(({rows}) => {
+                // user is not a tutor
+                if (rows.length === 0) {
+                    finalObject["is_tutor"] = false;
+                    queryResponses += 2;
+                } else {
+                    if (rows[0]["biography"] !== null) {
+                        finalObject["tutor_bio"] = rows[0]["biography"];
+                    }
+                    finalObject["is_tutor"] = true;
+                    ++queryResponses;
+                    db.query("select subject_name from thetutor4u.subject_tutor where tutor_id = $1;", [user.sub]).then(
+                        ({rows}) => {
+                            finalObject["tutor_subjects"] = [];
+                            for (let a = 0; a < rows.length; ++a) {
+                                finalObject["tutor_subjects"].push(rows[a]["subject_name"]);
+                            }
+                            ++queryResponses;
+                        }
+                    );
+                }
+            });
+            // hold up the thread until all the promises have resolved and all the data has been retrieved
+            while (!(promiseFailed === true || queryResponses === 4));
+            if (!promiseFailed) {
+                response.statusCode = 200;
+                response.send(JSON.stringify(finalObject));
+            }
         }
+    });
+});
+
+/*
+Get all subjects that are available on the website
+*/
+server.get("/api/subjects", (_, response) => {
+    db.query("select name from thetutor4u.subject;").then(({rows}) => {
+        const responseArray = [];
+        for (let a = 0; a < rows.length; ++a) {
+            responseArray.push(rows[a]["name"]);
+        }
+        response.statusCode = 200;
+        response.send(JSON.stringify(responseArray));
     });
 });
 module.exports = server;

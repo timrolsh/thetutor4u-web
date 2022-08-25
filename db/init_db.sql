@@ -72,12 +72,6 @@ create table thetutor4u.language_user (
 
 create table thetutor4u.subject (name text not null);
 
--- create a demo subject for now
-insert into
-    thetutor4u.subject
-values
-    ('demo');
-
 -- a tutor has a bio
 create table thetutor4u.tutor (
     user_id text not null,

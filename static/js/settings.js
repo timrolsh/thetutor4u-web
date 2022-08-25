@@ -1,3 +1,4 @@
+import {getDBInfo} from "get-user";
 const username = document.getElementById("username_field");
 const first_name = document.getElementById("first_name_field");
 const last_name = document.getElementById("last_name_field");
@@ -5,32 +6,9 @@ const email = document.getElementById("email_field");
 const dob = document.getElementById("dob_field");
 const save_button = document.getElementById("save_button");
 const illegalChars = "1234567890_+=[]{}:;|<,>.?/";
-const updating = document.getElementById("updating_settings");
 const tutor_bio = document.getElementById("tutor_bio_field");
 const form = document.getElementById("form");
-const username_old = username.getAttribute("username_old");
-const languages_select = document.getElementById("languages_select");
-
-// get all the languages that the user speaks and check them in the form
-fetch("/api/user-languages", {
-    credentials: "same-origin",
-    method: "GET"
-}).then((fetchResonse) => {
-    fetchResonse.json().then((languages) => {
-        const options = languages_select.children;
-        for (let a = 0; a < options.length; ++a) {
-            for (let b = 0; b < languages.length; ++b) {
-                if (options[a].getAttribute("value") === languages[b]) {
-                    options[a].selected = true;
-                    languages.splice(b, 1);
-                    break;
-                }
-            }
-        }
-    });
-});
-
-//
+let username_old;
 
 function isSignedInWithEmail() {
     return email !== null;
@@ -73,8 +51,8 @@ function validUsername() {
     });
 }
 
-function validDob() {
-    if (dob.getAttribute("dob_exists") === "true") {
+function validDob(user) {
+    if (user.dob !== null) {
         return true;
     } else {
         return dob.value !== "";
@@ -85,9 +63,9 @@ function validDob() {
 returns a boolean of whether the form data is valid. Verifies the first name, last name, and username before changing 
 the settings
 */
-function formDataValid() {
+function formDataValid(user) {
     return new Promise((resolve, reject) => {
-        if (!(validName(first_name.value) && validName(last_name.value) && validDob())) {
+        if (!(validName(first_name.value) && validName(last_name.value) && validDob(user))) {
             reject(
                 `You have entered either a first name or last name using illegal characacters (${illegalChars}), ` +
                     `or you have not specified your DOB. `
@@ -112,12 +90,49 @@ function formDataValid() {
 }
 
 // form submit handler
-save_button.addEventListener("click", () => {
-    formDataValid()
-        .then(() => {
-            form.submit();
-        })
-        .catch((error) => {
-            alert(`Unable to save settings for the following reason: ${error}`);
+
+getDBInfo().then((fetchResponse) => {
+    fetchResponse.json().then((user) => {
+        save_button.addEventListener("click", () => {
+            formDataValid(user)
+                .then(() => {
+                    form.submit();
+                })
+                .catch((error) => {
+                    alert(`Unable to save settings for the following reason: ${error}`);
+                });
         });
+
+        username_old = user.username;
+        document.getElementById("welcome").innerHTML += user.name;
+        // select languages user already teaches in the language select box
+        const option_fields = document.getElementById("languages_select").children;
+        for (let a = 0; a < option_fields.length; ++a) {
+            for (let b = 0; b < user.languages.length; ++b) {
+                if (option_fields[a].getAttribute("value") === user.languages[b]) {
+                    option_fields[a].selected = true;
+                    user.languages.splice(b, 1);
+                    break;
+                }
+            }
+        }
+        // populate all the fields with the data from the user object
+        if (user.dob === null) {
+            document.getElementById("dob_info_null").style = "";
+        } else {
+            dob.value = user.dob;
+        }
+        username.value = user.username;
+        first_name.value = user.first_name;
+        last_name.value = user.last_name;
+        email.value = user.email;
+        if (user.is_tutor === true) {
+            document.getElementById("tutor_biography").style = "";
+            tutor_bio.setAttribute("name", "tutor_bio");
+            tutor_bio.setAttribute("type", "text");
+            if (user.tutor_bio !== null) {
+                tutor_bio.value = user.tutor_bio;
+            }
+        }
+    });
 });

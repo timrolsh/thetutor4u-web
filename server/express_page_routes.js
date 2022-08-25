@@ -15,9 +15,7 @@ server.get("/", (request, response) => {
         }
         // user is signed in, render signed in home page
         else {
-            getFullUserInfo(user).then((userInfo) => {
-                response.render("index-signed-in", userInfo);
-            });
+            response.sendFile(`${rootPath}/pages/index-signed-in.html`);
         }
     });
 });
@@ -92,9 +90,22 @@ server.post("/settings", (request, response) => {
                                 `insert into thetutor4u.language_user (user_id, language_code) values ${valuesString};`
                             )
                                 .then(() => {
-                                    getFullUserInfo(user).then((userInfo) => {
-                                        response.render("settings", userInfo);
-                                    });
+                                    // if tutor bio field was provifed, user is a tutor, update their tutor bio
+                                    if (request.body.tutor_bio) {
+                                        db.query("update thetutor4u.tutor set biography = $1 where user_id = $2;", [
+                                            request.body.tutor_bio,
+                                            user.sub
+                                        ])
+                                            .then(() => {
+                                                getFullUserInfo(user).then((userInfo) => {
+                                                    response.render("settings", userInfo);
+                                                });
+                                            })
+                                            .catch(() => {
+                                                response.statusCode = 500;
+                                                response.send("database issue");
+                                            });
+                                    }
                                 })
                                 .catch(() => {
                                     response.statusCode = 500;
@@ -230,6 +241,26 @@ server.post("/search", (request, response) => {
             }
         });
     }
+});
+
+server.get("/tutor/apply-subject", (request, response) => {
+    getUser(request, response, (user) => {
+        if (user === false) {
+            response.redirect("/");
+        } else {
+            response.sendFile(`${rootPath}/pages/tutor/apply-subject.html`);
+        }
+    });
+});
+
+server.get("/tutor/create-subject", (request, response) => {
+    getUser(request, response, (user) => {
+        if (user === false) {
+            response.redirect("/");
+        } else {
+            response.sendFile(`${rootPath}/pages/tutor/create-subject.html`);
+        }
+    });
 });
 
 /*

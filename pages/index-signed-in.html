@@ -5,13 +5,15 @@
         <title>TheTutor4U</title>
     </head>
     <body>
-        <div>Welcome, <%=dbInfo.first_name%> <%= dbInfo.last_name %></div>
+        <div id = "welcome">Welcome, </div>
         <button id="logout-button">Logout</button>
         <a href="/settings">Settings</a>
         <a href="/calendar">Calendar</a>
         <a href="/tutor">Tutor Dashboard</a>
         <a href="/student">Student Dashboard</a>
-
+        <!-- TODO fix script tags -->
         <script src="/js/logout-button.js"></script>
+        <script src = "/js/get-user.js"></script>
+        <script src = "/js/index-signed-in.html"></script>
     </body>
 </html>
