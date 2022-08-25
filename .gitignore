@@ -2,3 +2,4 @@ node_modules/
 .idea/
 .env
 todo.txt
+db/create_db.ps1
