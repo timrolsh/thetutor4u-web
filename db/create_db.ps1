@@ -8,4 +8,3 @@ docker run --name thetutor4u-db -d -p 5432:5432 thetutor4u-db-image;
 Start-Sleep -Seconds 1;
 docker exec thetutor4u-db psql -d postgres -f /script/init_db.sql;
 Write-Output "Successfully created new container and image. ";
-
