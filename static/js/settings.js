@@ -104,7 +104,7 @@ getDBInfo().then((fetchResponse) => {
         });
 
         username_old = user.username;
-        document.getElementById("welcome").innerHTML += user.name;
+        document.getElementById("welcome").innerHTML += `${user.first_name} ${user.last_name}`;
         // select languages user already teaches in the language select box
         const option_fields = document.getElementById("languages_select").children;
         for (let a = 0; a < option_fields.length; ++a) {
