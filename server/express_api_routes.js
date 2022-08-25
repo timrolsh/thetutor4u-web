@@ -132,8 +132,6 @@ Returns user info in the following JSON format:
     is_tutor: boolean, is the user a tutor or not? If this is false, all the other fields will be null,
     tutor_subjects: all of the subjects that the tutor is qualified to teach,
     tutor_bio: the tutor's bio,
-
-    
 }
 */
 server.get("/api/user-info", (request, response) => {

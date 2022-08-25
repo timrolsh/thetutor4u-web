@@ -2,10 +2,51 @@ const server = require("./express_config");
 const rootPath = require("./root_path");
 const db = require("./db_pool");
 const crypto = require("crypto");
-const {getUser, googleClient, getFullUserInfo} = require("./user_authentication");
+const {getUser, googleClient} = require("./user_authentication");
 
-/* 
-home page: if user is logged in, bring them to dashboard, otherwise, render the home page
+/*
+About page, looks the same for everyone no matter if they are logged in or not. Static page
+ */
+server.get("/about", (_, response) => {
+    response.sendFile(`${rootPath}/pages/about.html`);
+});
+
+/*
+For all protected endpoints: display the page if user is signed in, redirect back to home if they are not singed in.
+*/
+function processProtectedEndpoint(request, response, redirect) {
+    getUser(request, response, (user) => {
+        // user is not logged in, go home
+        if (user === false) {
+            response.redirect("/");
+        }
+        // user is logged in, render settings page
+        else {
+            response.sendFile(`${rootPath}/pages/${redirect}.html`);
+        }
+    });
+}
+server.get("/settings", (request, response) => {
+    processProtectedEndpoint(request, response, "settings");
+});
+server.get("/student", (request, response) => {
+    processProtectedEndpoint(request, response, "student");
+});
+server.get("/tutor", (request, response) => {
+    processProtectedEndpoint(request, response, "tutor");
+});
+server.get("/calendar", (request, response) => {
+    processProtectedEndpoint(request, response, "calendar");
+});
+server.get("/tutor/apply-subject", (request, response) => {
+    processProtectedEndpoint(request, response, "tutor/apply-subject");
+});
+server.get("/tutor/create-subject", (request, response) => {
+    processProtectedEndpoint(request, response, "tutor/create-subject");
+});
+
+/*
+Home page: If user is signed in, render dashboard. Otherwise, render home page
 */
 server.get("/", (request, response) => {
     getUser(request, response, (user) => {
@@ -21,27 +62,15 @@ server.get("/", (request, response) => {
 });
 
 /*
-settings page: if user is not logged in, bring them to home page
-*/
-server.get("/settings", (request, response) => {
-    getUser(request, response, (user) => {
-        // user is not logged in, go home
-        if (user === false) {
-            response.redirect("/");
-        }
-        // user is logged in, render settings page
-        else {
-            getFullUserInfo(user).then((userInfo) => {
-                response.render("settings", userInfo);
-            });
-        }
-    });
-});
-
-/*
-Also settings page but for when settings are saved and form is submitted
+html form posts to this route when settings are saved
 */
 server.post("/settings", (request, response) => {
+    function errorCallback(error) {
+        console.log(error);
+        response.statusCode = 500;
+        response.send("database error");
+        return;
+    }
     if (
         !(
             request.body.username &&
@@ -97,175 +126,113 @@ server.post("/settings", (request, response) => {
                                             user.sub
                                         ])
                                             .then(() => {
-                                                getFullUserInfo(user).then((userInfo) => {
-                                                    response.render("settings", userInfo);
-                                                });
+                                                response.sendFile(`${rootPath}/pages/settings.html`);
                                             })
-                                            .catch(() => {
-                                                response.statusCode = 500;
-                                                response.send("database issue");
-                                            });
+                                            .catch(errorCallback);
                                     }
                                 })
-                                .catch(() => {
-                                    response.statusCode = 500;
-                                    response.send("database issue");
-                                });
+                                .catch(errorCallback);
                         })
-                        .catch(() => {
-                            response.statusCode = 500;
-                            response.send("database issue");
-                        });
+                        .catch(errorCallback);
                 })
-                .catch(() => {
-                    response.statusCode = 500;
-                    response.send("database issue");
-                });
+                .catch(errorCallback);
         });
     }
 });
 
 /*
-About page, looks the same for everyone no matter if they are logged in or not
- */
-server.get("/about", (request, response) => {
-    response.sendFile(`${rootPath}/pages/about.html`);
-});
-
-/*
-Student dashboard page: if user is not logged in, bring them to home page
+html form posts to this route when tutor creates a new subject
 */
-server.get("/student", (request, response) => {
+server.post("/tutor/create-subject", (request, response) => {
+    // TODO turn this into an insert into if not already there statement somehow instead of doing two queries
     getUser(request, response, (user) => {
-        // user is not logged in, go home
         if (user === false) {
             response.redirect("/");
-        }
-        // user is logged in, render student dashboard page
-        else {
-            getFullUserInfo(user).then((userInfo) => {
-                response.render("student", userInfo);
-            });
-        }
-    });
-});
+        } else {
+            if (request.body.subject) {
+                db.query("select * from thetutor4u.subject where name = $1;", [request.body.subject]).then(({rows}) => {
+                    if (rows.length === 0) {
+                        let dbQueries = 0;
+                        function addDbQueries() {
+                            ++dbQueries;
+                        }
+                        let promiseFailed = false;
+                        function errorCallback(error) {
+                            console.log(error);
+                            response.statusCode = 500;
+                            response.send("database error");
+                            promiseFailed = true;
+                            return;
+                        }
+                        db.query("insert into thetutor4u.subject (name) values ($1);", [request.body.subject])
+                            .then(addDbQueries)
 
-/*
-Tutor dashboard page: if user is not logged in, bring them to home page
-*/
-server.get("/tutor", (request, response) => {
-    getUser(request, response, (user) => {
-        // user is not logged in, go home
-        if (user === false) {
-            response.redirect("/");
-        }
-        // user is logged in, render tutor dashboard page
-        else {
-            getFullUserInfo(user).then((userInfo) => {
-                response.render("tutor", userInfo);
-            });
-        }
-    });
-});
+                            .catch(errorCallback);
+                        // tutor is automatically qualified to teach the subject that they created
+                        db.query("insert into thetutor4u.subject_tutor (user_id, subject_name) values ($1, $2)", [
+                            user.sub,
+                            request.body.subject
+                        ])
+                            .then(addDbQueries)
 
-/*
-Calendar page: if user is not logged in, bring them to home page
-*/
-server.get("/calendar", (request, response) => {
-    getUser(request, response, (user) => {
-        // user is not logged in, go home
-        if (user === false) {
-            response.redirect("/");
-        }
-        // user is logged in, render student dashboard page
-        else {
-            getFullUserInfo(user).then((userInfo) => {
-                response.render("calendar", userInfo);
-            });
-        }
-    });
-});
-
-/*
-route that displays user info: for development purposes only and will not be active during production
-*/
-if (process.env.DEV === "true") {
-    server.get("/auth/me", (request, response) => {
-        getUser(request, response, (user) => {
-            if (user === false) {
-                response.redirect("/");
-            } else {
-                getFullUserInfo(user).then((userInfo) => {
-                    response.send(userInfo);
+                            .catch(errorCallback);
+                        while (dbQueries !== 2);
+                    }
                 });
             }
-        });
+            response.redirect("/tutor");
+        }
     });
-}
+});
 
 /*
-Search page for both students and tutors to connect
+html form posts to this route when tutor applies for a new subject
 */
-server.post("/search", (request, response) => {
-    // if not all the fields are provided or the context isn't correct, bring back to home page
-    if (
-        !(
-            request.body.context &&
-            request.body.language &&
-            request.body.subject &&
-            (request.body.context === "student" || request.body.context === "tutor")
-        )
-    ) {
-        response.redirect("/");
-    } else {
-        getUser(request, response, (user) => {
-            if (user === false) {
-                response.redirect("/");
-            } else {
-                getFullUserInfo(user).then((userInfo) => {
-                    // student is looking for one subject, add that into their user field
-                    if (request.body.context === "student") {
-                        db.query("update thetutor4u.user set subject_name = $1 where id = $2;", [
-                            request.body.subject,
-                            user.sub
-                        ]);
-                    }
-                    // tutor is looking to teach multiple subjects, set all of the teaching_now properties to false first and then set all the teaching_now properties to true for all of the subjects that the tutor has selected to teach
-                    else {
-                    }
-                    userInfo.context = request.body.context;
-                    userInfo.subject = request.body.subject;
-                    userInfo.language = request.body.language;
-                    response.render("search", userInfo);
-                });
-            }
-        });
+server.post("/tutor/apply-subject", (request, response) => {
+    function errorCallback(error) {
+        console.log(error);
+        response.statusCode = 500;
+        response.send("database error");
+        return;
     }
-});
-
-server.get("/tutor/apply-subject", (request, response) => {
     getUser(request, response, (user) => {
         if (user === false) {
             response.redirect("/");
         } else {
-            response.sendFile(`${rootPath}/pages/tutor/apply-subject.html`);
-        }
-    });
-});
-
-server.get("/tutor/create-subject", (request, response) => {
-    getUser(request, response, (user) => {
-        if (user === false) {
-            response.redirect("/");
-        } else {
-            response.sendFile(`${rootPath}/pages/tutor/create-subject.html`);
+            if (request.body.subject || request.body.subject !== null) {
+                db.query("select name from thetutor4u.subject where name = $1;", [request.body.subject])
+                    .then(({rows}) => {
+                        if (rows.length === 1) {
+                            db.query(
+                                "select subject_name from thetutor4u.subject_tutor where tutor_id = $1 and subject_name = $2;",
+                                [user.sub, request.body.subject]
+                            )
+                                .then(({rows}) => {
+                                    if (rows.length === 0) {
+                                        db.query(
+                                            "insert into thetutor4u.subject_tutor (tutor_id, subject_name) values ($1, $2);",
+                                            [user.sub, request.body.subject]
+                                        )
+                                            .then(() => {
+                                                response.redirect("/tutor");
+                                            })
+                                            .catch(errorCallback);
+                                    }
+                                })
+                                .catch(errorCallback);
+                        }
+                    })
+                    .catch(errorCallback);
+            } else {
+                response.redirect("/tutor");
+            }
         }
     });
 });
 
 /*
-google authentication callback route, google posts back here after it is logged in with jwt, we store that jwt in 
-browser cookies and validate JWT on every request
+google authentication callback route, google posts back here after it is logged in with jwt which is stored in browser
+cookies and validate JWT on every request
 */
 server.post("/auth/google/callback", (request, response) => {
     response.clearCookie("token");
