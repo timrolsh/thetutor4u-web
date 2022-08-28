@@ -37,9 +37,6 @@ if (process.env.DEV === "true") {
 server.use("/bootstrap", express.static(`${rootPath}/node_modules/bootstrap`));
 // static files routes
 server.use(express.static(`${rootPath}/static`));
-// use ejs for server side rendering
-server.set("views", `${rootPath}/pages`);
-server.set("view engine", "ejs");
 
 // json middleware
 server.use(express.urlencoded({extended: false}));

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>TheTutor4U - Tutor Dashboard</title>
+    </head>
+    <body>
+        <div id="welcome">Welcome,</div>
+        <button id="logout-button">Logout</button>
+        <a href="/">Home</a>
+        <a href="/calendar">Calendar</a>
+        <a href="/student">Student Dashboard</a>
+        <a href="/settings">Settings</a>
+        <script src="/js/logout-button.js"></script>
+        <div style="display: none" id="tutor_links">
+            <div>Tutor Links</div>
+            <a href="/tutor/create-subject">Create/Suggest a New Subject</a>
+            <a href="/tutor/apply-subject">Apply to Teach an Existing Subject</a>
+        </div>
+
+        <div>Tutor Dashboard</div>
+        <!-- if user is not a tutor, offer them to sign up -->
+        <div id="not_a_tutor" style="display: none">You are not a tutor, sign up here</div>
+        <form id="signup_tutor_form" style="display: none" method="post" action="/api/register-tutor">
+            <button type="submit">Become a tutor (instant accept for now)</button>
+        </form>
+        <div id="no_tutor_bio" style="display: none">
+            Important: You have not created a bio yet. Please create a bio on the settings page
+        </div>
+        <div id="valid-tutor" style="display: none">
+            You are a registered tutor, pick subjects to teach and teach now. You will be matched with tutors who speak
+            the language(s) that you know. You can change languages you are comfortable with on the settings page
+        </div>
+        <div style="display: none" id="no-subjects-teach">
+            You are not qualified to teach any subjects as of right now. Please use the above link to sign up for more
+            subjects
+        </div>
+        <form style="display: none" id="find_students_form" method="post" action="/search">
+            <input type="hidden" name="context" value="tutor" />
+            <div>Subjects</div>
+            <select id="select" name="subject" mulitple="true"></select>
+            <button id="find_students_button" type="submit">Find Students</button>
+        </form>
+        <script type="module" src="/js/tutor.js"></script>
+    </body>
+</html>

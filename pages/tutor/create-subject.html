@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>TheTutor4U Tutors - Create a New Subject</title>
+    </head>
+    <body>
+        <div id="welcome">Welcome,</div>
+        <button id="logout-button">Logout</button>
+        <a href="/">Home</a>
+        <a href="/calendar">Calendar</a>
+        <a href="/tutor">Tutor Dashboard</a>
+        <a href="/student">Student Dashboard</a>
+        <a href="/settings">Settings</a>
+        <script src="/js/logout-button.js"></script>
+        <div>Tutor Links</div>
+        <a href="/tutor/apply-subject">Apply to Teach an Existing Subject</a>
+        <div>
+            To create a new subject, enter the subject name and click create. You cannot create a subject with the same
+            name as another subject. Instant subject creation for now.
+        </div>
+        <form method="post" action="/tutor/create-subject">
+            <input type="text" name="subject" placeholder="Subject Name" />
+            <button type="submit">Create New Subject</button>
+        </form>
+        <script type="module" src="/js/tutor/create-subject.js"></script>
+    </body>
+</html>
