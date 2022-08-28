@@ -3,10 +3,9 @@ document.getElementById("welcome").innerHTML += " " + getTokenInfo().name;
 const subject_select = document.getElementById("subject_select");
 
 fetch("/api/subjects").then((fetchResponse) => {
-    fetchResponse.json().then((subjects)=> {
+    fetchResponse.json().then((subjects) => {
         for (let a = 0; a < subjects.length; ++a) {
-            subject_select.innerHTML += `<option value = "${subjects[a]}">${subjects[a]}</option>`
+            subject_select.innerHTML += `<option value = "${subjects[a]}">${subjects[a]}</option>`;
         }
-
-    })
-})
+    });
+});
