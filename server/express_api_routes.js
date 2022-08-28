@@ -1,6 +1,6 @@
 const server = require("./express_page_routes");
 const db = require("./db_pool");
-const {getUser, getFullUserInfo} = require("./user_authentication");
+const {getUser} = require("./user_authentication");
 
 /*
 route that checks if a username is valid or not, meaning whether it exists or not. Responds "valid" or "invalid" with 
@@ -39,32 +39,31 @@ server.post("/api/valid-username", (request, response) => {
 Temporary sign up route for tutors, will be used only for demo purposes
 */
 server.post("/api/register-tutor", (request, response) => {
+    function dbError(error) {
+        console.log(error);
+        response.statusCode = 500;
+        response.send("database error");
+    }
     getUser(request, response, (user) => {
         // user is not logged in, go home
         if (user === false) {
             response.redirect("/");
         }
-        // user is logged in, register them as a tutor and bring them back to their tutor dashboard
-        getFullUserInfo(user).then((userInfo) => {
-            // user is already counted as a tutor in the database
-            if (userInfo.is_tutor === true) {
-                response.redirect("/tutor");
-            } else {
-                db.query("insert into thetutor4u.tutor (user_id) values ($1);", [userInfo.dbInfo.id])
-                    .then(() => {
-                        console.log(
-                            `successfully registered new tutor ${userInfo.dbInfo.first_name} ` +
-                                userInfo.dbInfo.last_name
-                        );
-                        response.redirect("/tutor");
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                        response.statusCode = 500;
-                        response.send("database error");
-                    });
-            }
-        });
+        // user is already counted as a tutor in the database
+        db.query("select * from thetutor4u.tutor where user_id = $1;", [user.sub])
+            .then(({rows}) => {
+                // user is not already registered as a tutor in the database
+                if (rows.length === 0) {
+                    db.query("insert into thetutor4u.tutor (user_id) values ($1);", [user.sub])
+                        .then(() => {
+                            response.redirect("/tutor");
+                        })
+                        .catch(dbError);
+                } else {
+                    response.redirect("/tutor");
+                }
+            })
+            .catch(dbError);
     });
 });
 
@@ -151,13 +150,10 @@ server.get("/api/user-info", (request, response) => {
                 tutor_subjects: null,
                 tutor_bio: null
             };
-            let queryResponses = 0;
-            let promiseFailed = false;
             function errorCallback(error) {
                 console.log(error);
                 response.statusCode = 500;
                 response.send("database error");
-                promiseFailed = true;
                 return;
             }
             db.query("select email, username, first_name, last_name, dob from thetutor4u.user where id = $1;", [
@@ -170,46 +166,42 @@ server.get("/api/user-info", (request, response) => {
                     finalObject["first_name"] = rows["first_name"];
                     finalObject["last_name"] = rows["last_name"];
                     finalObject["dob"] = rows["dob"];
-                    ++queryResponses;
-                })
-                .catch(errorCallback);
-            db.query("select language_code from thetutor4u.language_user where user_id = $1;", [user.sub])
-                .then(({rows}) => {
-                    finalObject["languages"] = [];
-                    for (let a = 0; a < rows.length; ++a) {
-                        finalObject["languages"].push(rows[a]["language_code"]);
-                    }
-                    ++queryResponses;
-                })
-                .catch(errorCallback);
-            db.query("select biography from thetutor4u.tutor where user_id = $1;", [user.sub]).then(({rows}) => {
-                // user is not a tutor
-                if (rows.length === 0) {
-                    finalObject["is_tutor"] = false;
-                    queryResponses += 2;
-                } else {
-                    if (rows[0]["biography"] !== null) {
-                        finalObject["tutor_bio"] = rows[0]["biography"];
-                    }
-                    finalObject["is_tutor"] = true;
-                    ++queryResponses;
-                    db.query("select subject_name from thetutor4u.subject_tutor where tutor_id = $1;", [user.sub]).then(
-                        ({rows}) => {
-                            finalObject["tutor_subjects"] = [];
+                    db.query("select language_code from thetutor4u.language_user where user_id = $1;", [user.sub])
+                        .then(({rows}) => {
+                            finalObject["languages"] = [];
                             for (let a = 0; a < rows.length; ++a) {
-                                finalObject["tutor_subjects"].push(rows[a]["subject_name"]);
+                                finalObject["languages"].push(rows[a]["language_code"]);
                             }
-                            ++queryResponses;
-                        }
-                    );
-                }
-            });
-            // hold up the thread until all the promises have resolved and all the data has been retrieved
-            while (!(promiseFailed === true || queryResponses === 4));
-            if (!promiseFailed) {
-                response.statusCode = 200;
-                response.send(JSON.stringify(finalObject));
-            }
+                            db.query("select biography from thetutor4u.tutor where user_id = $1;", [user.sub]).then(
+                                ({rows}) => {
+                                    // user is not a tutor
+                                    if (rows.length === 0) {
+                                        finalObject["is_tutor"] = false;
+                                        response.statusCode = 200;
+                                        response.send(JSON.stringify(finalObject));
+                                    } else {
+                                        if (rows[0]["biography"] !== null) {
+                                            finalObject["tutor_bio"] = rows[0]["biography"];
+                                        }
+                                        finalObject["is_tutor"] = true;
+                                        db.query(
+                                            "select subject_name from thetutor4u.subject_tutor where tutor_id = $1;",
+                                            [user.sub]
+                                        ).then(({rows}) => {
+                                            finalObject["tutor_subjects"] = [];
+                                            for (let a = 0; a < rows.length; ++a) {
+                                                finalObject["tutor_subjects"].push(rows[a]["subject_name"]);
+                                            }
+                                            response.statusCode = 200;
+                                            response.send(JSON.stringify(finalObject));
+                                        });
+                                    }
+                                }
+                            );
+                        })
+                        .catch(errorCallback);
+                })
+                .catch(errorCallback);
         }
     });
 });

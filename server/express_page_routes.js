@@ -129,6 +129,8 @@ server.post("/settings", (request, response) => {
                                                 response.sendFile(`${rootPath}/pages/settings.html`);
                                             })
                                             .catch(errorCallback);
+                                    } else {
+                                        response.sendFile(`${rootPath}/pages/settings.html`);
                                     }
                                 })
                                 .catch(errorCallback);
@@ -144,43 +146,43 @@ server.post("/settings", (request, response) => {
 html form posts to this route when tutor creates a new subject
 */
 server.post("/tutor/create-subject", (request, response) => {
-    // TODO turn this into an insert into if not already there statement somehow instead of doing two queries
+    function errorCallback(error) {
+        console.log(error);
+        response.statusCode = 500;
+        response.send("database error");
+        return;
+    }
     getUser(request, response, (user) => {
         if (user === false) {
             response.redirect("/");
         } else {
+            console.log("a");
             if (request.body.subject) {
                 db.query("select * from thetutor4u.subject where name = $1;", [request.body.subject]).then(({rows}) => {
+                    console.log("b");
+                    // if subject does not exist, create a new subject and register tutor to teach that subject
                     if (rows.length === 0) {
-                        let dbQueries = 0;
-                        function addDbQueries() {
-                            ++dbQueries;
-                        }
-                        let promiseFailed = false;
-                        function errorCallback(error) {
-                            console.log(error);
-                            response.statusCode = 500;
-                            response.send("database error");
-                            promiseFailed = true;
-                            return;
-                        }
+                        console.log("c");
                         db.query("insert into thetutor4u.subject (name) values ($1);", [request.body.subject])
-                            .then(addDbQueries)
+                            .then(() => {
+                                console.log("d");
+                                db.query(
+                                    "insert into thetutor4u.subject_tutor (tutor_id, subject_name) values ($1, $2)",
+                                    [user.sub, request.body.subject]
+                                )
+                                    .then(() => {
+                                        console.log("e");
+                                        response.redirect("/tutor");
+                                    })
 
+                                    .catch(errorCallback);
+                            })
                             .catch(errorCallback);
-                        // tutor is automatically qualified to teach the subject that they created
-                        db.query("insert into thetutor4u.subject_tutor (user_id, subject_name) values ($1, $2)", [
-                            user.sub,
-                            request.body.subject
-                        ])
-                            .then(addDbQueries)
-
-                            .catch(errorCallback);
-                        while (dbQueries !== 2);
+                    } else {
+                        response.redirect("/tutor");
                     }
                 });
             }
-            response.redirect("/tutor");
         }
     });
 });

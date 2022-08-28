@@ -1,9 +1,10 @@
-import {getDBInfo} from "get-user";
+import {getDBInfo} from "/js/get-user.js";
 
 getDBInfo().then((fetchResponse) => {
     fetchResponse.json().then((user) => {
-        document.getElementById("welcome").innerHTML += `${user.first_name} ${user.last_name}`;
+        document.getElementById("welcome").innerHTML += ` ${user.first_name} ${user.last_name}`;
         if (user.is_tutor) {
+            document.getElementById("tutor_links").style = "";
             document.getElementById("valid-tutor").style = "";
             if (user.tutor_bio === null) {
                 document.getElementById("no_tutor_bio").style = "";

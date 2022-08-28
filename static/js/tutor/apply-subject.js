@@ -1,5 +1,5 @@
-import {getTokenInfo} from "get-user";
-document.getElementById("welcome").innerHTML += getTokenInfo().name;
+import {getTokenInfo} from "/js/get-user.js";
+document.getElementById("welcome").innerHTML += ` ${getTokenInfo().name}`;
 
 fetch("/api/subjects").then((fetchResponse) => {
     fetchResponse.json().then((subjects) => {

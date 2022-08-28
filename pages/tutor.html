@@ -12,9 +12,11 @@
         <a href="/student">Student Dashboard</a>
         <a href="/settings">Settings</a>
         <script src="/js/logout-button.js"></script>
-        <div>Tutor Links</div>
-        <a href="/tutor/create-subject">Create/Suggest a New Subject</a>
-        <a href="/tutor/apply-subject">Apply to Teach an Existing Subject</a>
+        <div style="display: none" id="tutor_links">
+            <div>Tutor Links</div>
+            <a href="/tutor/create-subject">Create/Suggest a New Subject</a>
+            <a href="/tutor/apply-subject">Apply to Teach an Existing Subject</a>
+        </div>
 
         <div>Tutor Dashboard</div>
         <!-- if user is not a tutor, offer them to sign up -->
@@ -39,6 +41,6 @@
             <select id="select" name="subject" mulitple="true"></select>
             <button id="find_students_button" type="submit">Find Students</button>
         </form>
-        <script src="/js/tutor.js"></script>
+        <script type="module" src="/js/tutor.js"></script>
     </body>
 </html>

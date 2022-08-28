@@ -1,4 +1,4 @@
-import {getDBInfo} from "get-user";
+import {getDBInfo} from "/js/get-user.js";
 const username = document.getElementById("username_field");
 const first_name = document.getElementById("first_name_field");
 const last_name = document.getElementById("last_name_field");
@@ -14,21 +14,6 @@ function isSignedInWithEmail() {
     return email !== null;
 }
 
-function changesMade() {
-    if (isSignedInWithEmail()) {
-        return !(
-            username.value === "" &&
-            first_name.value === "" &&
-            last_name.value === "" &&
-            email.value === "" &&
-            password_old.value === "" &&
-            password_new.value === "" &&
-            dob.value === ""
-        );
-    } else {
-        return !(username.value === "" && first_name.value === "" && last_name.value === "" && dob.value === "");
-    }
-}
 /*
 Returns whether the name is valid or not. Compares every characacter in the name to the list of illegal characters.
 */
@@ -104,7 +89,7 @@ getDBInfo().then((fetchResponse) => {
         });
 
         username_old = user.username;
-        document.getElementById("welcome").innerHTML += `${user.first_name} ${user.last_name}`;
+        document.getElementById("welcome").innerHTML += ` ${user.first_name} ${user.last_name}`;
         // select languages user already teaches in the language select box
         const option_fields = document.getElementById("languages_select").children;
         for (let a = 0; a < option_fields.length; ++a) {
