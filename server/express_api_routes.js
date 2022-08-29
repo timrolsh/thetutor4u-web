@@ -116,8 +116,33 @@ server.post("/api/active-students", (request, response) => {
             });
     }
 });
-// TODO add
-server.post("/api/active-tutors", (request, response) => {});
+
+// TODO add in ratings later
+/*
+Responds with a json array of the following objects:
+{
+    username: string,
+    first_name: string,
+    last_name: string,
+    hourly_rate: string
+}*/
+server.post("/api/active-tutors", (request, response) => {
+    // check that all the required fields are there
+    if (!(request.body.languages && Array.isArray(request.body.language) && request.body.subject)) {
+        response.statusCode = 400;
+        response.send("Invalid request sent: Include an array of language codes languages and a subject name subject");
+    } else {
+        /*
+        i need all the tutors who are have last been online within five seconds (user table), who are teaching the subject the student is looking for (subject_tutor table) who speak any one of the languages the student speaks (language_user table)
+        select * from thetutor4u.user, thetutor4u.tutor, thetutor4u.subject_tutor, thetutor4u.language_user
+        where thetutor4u.user.id = thetutor4u.tutor.user_id and
+        thetutor4u.subject_tutor.subject_name = $1 and
+        thetutor4u.language_user.language_code = all the language codes provided by the student
+        TODO fix this
+
+        */
+    }
+});
 
 /*
 Returns user info in the following JSON format:

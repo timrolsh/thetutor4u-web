@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>TheTutor4U - Signup with Email</title>
+    </head>
+    <body>
+        <div>TheTutor4U - Create a new Account with Email</div>
+        <form id="form" action="/signup" method="post">
+            <div>Username</div>
+            <input type="text" name="username" id="username_field" placeholder="Username" />
+            <div>Password</div>
+            <input type="password" name="password" id="password_field" placeholder="Password" />
+            <div>Confirm Password</div>
+            <input type="password" id="confirm_password_field" placeholder="Confirm Password" />
+            <div>First Name</div>
+            <input type="text" name="first_name" id="first_name_field" placeholder="First name" />
+            <div>Last Name</div>
+            <input type="text" name="last_name" id="last_name_field" placeholder="Last name" />
+            <div>Email</div>
+            <input type="email" name="email" id="email_field" placeholder="Email" />
+            <div>Date of Birth</div>
+            <input type="date" name="dob" id="dob_field" placeholder="Date of birth" />
+            <button id="button" type="button">Create an Account</button>
+        </form>
+        <script src="/js/authentication/signup-email.js"></script>
+    </body>
+</html>

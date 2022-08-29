@@ -17,10 +17,16 @@
             Begin an Instant Tutoring Session. You will be shown tutors that are currently tutoring your subject in the
             languages that you know. You can change the languages you know on the settings page
         </div>
-        <form method="post" action="/search">
+        <form method="post" action="/search/find-tutor">
             <input type="hidden" name="context" value="student" />
             <div>Subject</div>
             <select id="subject_select" name="subject"></select>
+            <!-- TODO add the ability for students to attach files as well -->
+            <input
+                type="text"
+                name="problem_description"
+                placeholder="write a short problem description for the tutors so that they know what you need help with."
+            />
             <button type="submit">Find Tutors</button>
         </form>
         <script type="module" src="/js/student.js"></script>

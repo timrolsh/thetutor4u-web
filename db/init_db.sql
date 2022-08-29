@@ -83,8 +83,7 @@ create table thetutor4u.tutor (
 create table thetutor4u.subject_tutor (
     subject_name text not null,
     tutor_id text not null,
-    -- is the tutor teaching this subject right now
-    teaching_now integer default 0 not null
+    hourly_rate double precision default 0 not null
 );
 
 create table thetutor4u.session (
