@@ -1,7 +1,3 @@
-/*
- All timestamps in this database will be recorded as unix timestamps in seconds. Unix second timestamp can be found
- with parseInt(Date.now() / 1000) in node/browser js.
- */
 -- if the schema exists, remove it and recreate it from scratch
 drop schema if exists thetutor4u cascade;
 
@@ -20,9 +16,9 @@ create table thetutor4u.conversation_user (
 create table thetutor4u.message (
     conversation_id int8 not null,
     content text not null,
-    time_sent int8 not null,
+    time_sent timestamp not null,
     received bool not null,
-    time_received int8
+    time_received timestamp
 );
 
 /*

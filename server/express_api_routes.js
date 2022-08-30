@@ -91,30 +91,8 @@ server.get("/api/heartbeat", (request, response) => {
     });
 });
 
-/*
-TODO add
-*/
-server.post("/api/active-students", (request, response) => {
-    if (!(request.body.subject && request.body.language)) {
-        response.statusCode = 400;
-        response.send("You must provide an english language name and a english subject in order");
-    } else {
-        db.query("select username, first_name, last_name from thetutor4u.user where subject_name = $1;", [
-            request.body.subject
-        ])
-            .then(({rows}) => {
-                response.statusCode = 200;
-                response.send(rows);
-            })
-            .catch((error) => {
-                console.log(error);
-                response.statusCode = 500;
-                response.send("database error");
-            });
-    }
-});
+server.post("/api/active-students", (request, response) => {});
 
-// TODO add in ratings later
 /*
 Responds with a json array of the following objects:
 {
@@ -152,7 +130,6 @@ server.post("/api/active-tutors", (request, response) => {
                 response.send("Database error");
                 console.log(error);
             });
-        // TODO go from here
     }
 });
 
