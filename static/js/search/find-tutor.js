@@ -1,13 +1,9 @@
 import {getDBInfo} from "/js/get-user.js";
-let subject = null;
-const cookieArray = document.cookie.split("; ");
-for (let a = 0; a < cookieArray.length; ++a) {
-    if (cookieArray[a].substring(0, 7) === "subject") {
-        subject = cookieArray[a].substring(8);
-    }
-}
+const subject = localStorage.getItem("subject");
+const problem_description = localStorage.getItem("problem_description");
+const status = document.getElementById("status");
 
-if (subject === null) {
+if (subject === null || problem_description === null) {
     window.location.href = "/student";
 } else {
     getDBInfo().then((fetchResponse) => {
@@ -23,9 +19,9 @@ if (subject === null) {
                         }
                     }
                     languages = languages.substring(0, languages.length - 2);
-                    document.getElementById(
-                        "header"
-                    ).innerHTML = `Welcome, ${user.first_name} ${user.last_name}. You are looking for tutors speaking the following languages: ${languages} and teaching the following subject: ${subject}.`;
+                    document.getElementById("header").innerHTML =
+                        `Welcome, ${user.first_name} ${user.last_name}. You are looking for tutors speaking` +
+                        ` the following languages: ${languages} and teaching the following subject: ${subject}.`;
                     setInterval(() => {
                         // request available tutors
                         fetch("/api/active-tutors", {
@@ -36,7 +32,15 @@ if (subject === null) {
                             body: JSON.stringify({languages: user.languages, subject: subject})
                         }).then((fetchResponse) => {
                             fetchResponse.json().then((tutors) => {
-                                // populate html with available tutors
+                                if (tutors.length === 0) {
+                                    status.innerHTML =
+                                        `No tutors are available to teach your subject right now. This page will` +
+                                        ` update as soon as a tutor becomes available.`;
+                                } else {
+                                    status.innerHTML =
+                                        `There are ${tutors.length} tutors available right now. Select one from the ` +
+                                        `list below to get started.`;
+                                }
                             });
                         });
                     }, 3000);

@@ -48,6 +48,12 @@ server.get("/tutor/apply-subject", (request, response) => {
 server.get("/tutor/create-subject", (request, response) => {
     processProtectedEndpoint(request, response, "tutor/create-subject");
 });
+server.get("/search/find-tutor", (request, response) => {
+    processProtectedEndpoint(request, response, "search/find-tutor");
+});
+server.get("/search/find-student", (request, response) => {
+    processProtectedEndpoint(request, response, "search/find-student");
+});
 
 /*
 Home page: If user is signed in, render dashboard. Otherwise, render home page
@@ -264,31 +270,6 @@ server.post("/auth/google/callback", (request, response) => {
                 }
             });
         });
-});
-
-server.post("/search/find-tutor", (request, response) => {
-    // verify that a subject was provided
-    if (!request.body.subject) {
-        response.redirect("/student");
-    } else {
-        getUser(request, response, (user) => {
-            if (user === false) {
-                response.redirect("/");
-            } else {
-                response.cookie("subject", request.body.subject);
-                response.sendFile(`${rootPath}/pages/search/find-tutor.html`);
-            }
-        });
-    }
-});
-server.post("/search/find-student", (request, response) => {
-    getUser(request, response, (user) => {
-        if (user === false) {
-            response.redirect("/");
-        } else {
-            response.sendFile(`${rootPath}/pages/search/find-tutor.html`);
-        }
-    });
 });
 
 server.post("/tutor/apply-subject", (request, response) => {

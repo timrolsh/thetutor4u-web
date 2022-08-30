@@ -37,15 +37,15 @@
         <form style="display: none" id="find_students_form">
             <div>Subjects</div>
             <select id="select_subjects" name="subjects" multiple="true"></select>
-            <button id="find_students_button" type="button">Find Students</button>
+            <button id="continue_button" type="button">Continue</button>
         </form>
-        <form style="display: none" id="rates_form" action="/search/find-student" method="POST">
+        <form style="display: none" id="rates_form">
             <div>
                 Please specify the hourly rates for each subject that you have selected to teach. Press back to go back.
             </div>
             <div id="rates_form_middle"></div>
             <button type="button" id="back_button">Back</button>
-            <button type="submit">Find Students</button>
+            <button id = "find_students_button" type="button">Find Students</button>
         </form>
         <script type="module" src="/js/tutor.js"></script>
     </body>

@@ -124,36 +124,35 @@ Responds with a json array of the following objects:
     hourly_rate: string
 }*/
 server.post("/api/active-tutors", (request, response) => {
+    const languages = request.body.languages;
     // check that all the required fields are there
-    if (!(request.body.languages && Array.isArray(request.body.language) && request.body.subject)) {
+    if (!(languages && Array.isArray(languages) && request.body.subject)) {
         response.statusCode = 400;
         response.send("Invalid request sent: Include an array of language codes languages and a subject name subject");
     } else {
-        db.query(`
-        select
-            distinct u.username,
-            u.first_name,
-            u.last_name,
-            t.biography,
-            ts.subject_name,
-            ts.hourly_rate
-        from
-            thetutor4u.user u
-            join thetutor4u.tutor t on u.id = t.user_id
-            join thetutor4u.language_user lu on lu.user_id = u.id
-            join thetutor4u.subject_tutor st on st.tutor_id = u.id
-        where
-            t.last_online > now() - interval '4 seconds'
-            and st.subject_name = $1
-            and lu.language_code in (
-                select
-                    language_code
-                from
-                    language_user
-                where
-                    user_id = $2
-            );`, []);
-            // TODO go from here
+        let subjectsSQL = "";
+
+        for (let a = 0; a < languages.length - 1; ++a) {
+            subjectsSQL += `'${languages[a]}', `;
+        }
+        subjectsSQL += `'${languages[languages.length - 1]}'`;
+        db.query(
+            `select distinct u.username, u.first_name, u.last_name, t.biography, st.subject_name, st.hourly_rate` +
+                ` from thetutor4u.user u join thetutor4u.tutor t on u.id = t.user_id join thetutor4u.language_user` +
+                ` lu on lu.user_id = u.id join thetutor4u.subject_tutor st on st.tutor_id = u.id where u.last_online` +
+                ` > now() - interval '4 seconds' and st.subject_name = '${request.body.subject}' and lu.language_code` +
+                ` in (${subjectsSQL}) and st.teaching_now = 1;`
+        )
+            .then(({rows}) => {
+                response.statusCode = 200;
+                response.send(rows);
+            })
+            .catch((error) => {
+                response.statusCode = 500;
+                response.send("Database error");
+                console.log(error);
+            });
+        // TODO go from here
     }
 });
 

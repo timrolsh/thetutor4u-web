@@ -1,6 +1,5 @@
 const {OAuth2Client} = require("google-auth-library");
 const googleClient = new OAuth2Client(process.env.CLIENT_ID);
-const db = require("./db_pool");
 const jwt = require("jsonwebtoken");
 const rootPath = require("./root_path");
 const publicKey = require("fs").readFileSync(`${rootPath}/authentication/jwtRS256.key.pub`);
