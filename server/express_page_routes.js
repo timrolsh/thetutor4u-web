@@ -6,6 +6,7 @@ const {getUser, googleClient} = require("./user_authentication");
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const privateKey = fs.readFileSync(`${rootPath}/authentication/jwtRS256.key`);
+const bcrypt = require("bcrypt");
 
 /*
 About page, looks the same for everyone no matter if they are logged in or not. Static page
@@ -248,17 +249,8 @@ server.post("/auth/google/callback", (request, response) => {
                 // if user does not exist in the database, add a new entry for them
                 if (dbResponse.rows.length === 0) {
                     db.query(
-                        "insert into thetutor4u.user (id, email, username, first_name, last_name, " +
-                            "time_account_created, iss) values ($1, $2, $3, $4, $5, $6, $7);",
-                        [
-                            user.sub,
-                            user.email,
-                            crypto.randomUUID(),
-                            user.given_name,
-                            user.family_name,
-                            parseInt(Date.now() / 1000),
-                            user.iss
-                        ]
+                        "insert into thetutor4u.user (id, email, username, first_name, last_name, iss) values ($1, $2, $3, $4, $5, $6);",
+                        [user.sub, user.email, crypto.randomUUID(), user.given_name, user.family_name, user.iss]
                     ).then(() => {
                         db.query("insert into thetutor4u.language_user (language_code, user_id) values ($1, $2);", [
                             "en",
@@ -351,7 +343,6 @@ server.post("/tutor/apply-subject", (request, response) => {
 });
 
 server.get("/signup", (request, response) => {
-    // TODO implement this later
     getUser(request, response, (user) => {
         if (user === false) {
             response.sendFile(`${rootPath}/pages/authentication/signup-email.html`);
@@ -365,9 +356,8 @@ server.post("/signup", (request, response) => {
     // verify that all of the fields exists in the request
     if (
         !(
-            request.body.usernmame &&
+            request.body.username &&
             request.body.password &&
-            request.body &&
             request.body.first_name &&
             request.body.last_name &&
             request.body.email &&
@@ -389,9 +379,44 @@ server.post("/signup", (request, response) => {
                             response.statusCode = 400;
                             response.send("The username you have provided has already been taken.");
                         } else {
-                            // insert into user
-                            db.query("insert into thetutor4u.user ()");
-                            // redirect them to their new dashboard page
+                            const randomUUID = crypto.randomUUID();
+                            response.cookie(
+                                "token",
+                                jwt.sign(
+                                    {
+                                        iss: "email",
+                                        sub: randomUUID,
+                                        email: request.body.email,
+                                        name: `${request.body.first_name} ${request.body.last_name}`,
+                                        given_name: request.body.first_name,
+                                        family_name: request.body.last_name,
+                                        iat: parseInt(Date.now() / 1000)
+                                    },
+                                    privateKey,
+                                    {algorithm: "RS256"}
+                                )
+                            );
+                            bcrypt.hash(request.body.password, 10, (_, hash) => {
+                                db.query(
+                                    "insert into thetutor4u.user (id, email, username, first_name, last_name, iss, password_hash) values ($1, $2, $3, $4, $5, $6, $7);",
+                                    [
+                                        randomUUID,
+                                        request.body.email,
+                                        request.body.username,
+                                        request.body.first_name,
+                                        request.body.last_name,
+                                        "email",
+                                        hash
+                                    ]
+                                ).then(() => {
+                                    db.query(
+                                        "insert into thetutor4u.language_user (language_code, user_id) values ($1, $2);",
+                                        ["en", randomUUID]
+                                    ).then(() => {
+                                        response.redirect("/");
+                                    });
+                                });
+                            });
                         }
                     }
                 );
@@ -399,4 +424,58 @@ server.post("/signup", (request, response) => {
         });
     }
 });
+
+server.post("/login", (request, response) => {
+    if (!(request.body.username && request.body.password)) {
+        response.redirect("/");
+    } else {
+        getUser(request, response, (user) => {
+            if (user !== false) {
+                response.redirect("/");
+            } else {
+                db.query("select * from thetutor4u.user where username = $1;", [request.body.username]).then(
+                    ({rows}) => {
+                        // invalid login credentials
+                        if (rows.length === 0) {
+                            response.redirect("/login");
+                        } else {
+                            bcrypt.hash(request.body.password, 10, (_, hash) => {
+                                bcrypt.compare(request.body.password, rows[0].password_hash, () => {
+                                    response.cookie(
+                                        "token",
+                                        jwt.sign(
+                                            {
+                                                iss: "email",
+                                                sub: rows[0].id,
+                                                email: rows[0].email,
+                                                name: `${rows[0].first_name} ${rows[0].last_name}`,
+                                                given_name: rows[0].first_name,
+                                                family_name: rows[0].last_name,
+                                                iat: parseInt(Date.now() / 1000)
+                                            },
+                                            privateKey,
+                                            {algorithm: "RS256"}
+                                        )
+                                    );
+                                    response.redirect("/");
+                                });
+                            });
+                        }
+                    }
+                );
+            }
+        });
+    }
+});
+
+server.get("/login", (request, response) => {
+    getUser(request, response, (user) => {
+        if (user !== false) {
+            response.redirect("/");
+        } else {
+            response.sendFile(`${rootPath}/pages/authentication/login-email.html`);
+        }
+    });
+});
+
 module.exports = server;

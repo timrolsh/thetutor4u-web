@@ -77,10 +77,7 @@ server.get("/api/heartbeat", (request, response) => {
             response.statusCode = 400;
             response.send("Log in to access this endpoint. ");
         } else {
-            db.query("update thetutor4u.user set last_online = $1 where id = $2;", [
-                parseInt(Date.now() / 1000),
-                user.sub
-            ])
+            db.query("update thetutor4u.user set last_online = now() where id = $1;", [user.sub])
                 .catch((error) => {
                     console.log(error);
                     response.statusCode = 500;
@@ -132,15 +129,31 @@ server.post("/api/active-tutors", (request, response) => {
         response.statusCode = 400;
         response.send("Invalid request sent: Include an array of language codes languages and a subject name subject");
     } else {
-        /*
-        i need all the tutors who are have last been online within five seconds (user table), who are teaching the subject the student is looking for (subject_tutor table) who speak any one of the languages the student speaks (language_user table)
-        select * from thetutor4u.user, thetutor4u.tutor, thetutor4u.subject_tutor, thetutor4u.language_user
-        where thetutor4u.user.id = thetutor4u.tutor.user_id and
-        thetutor4u.subject_tutor.subject_name = $1 and
-        thetutor4u.language_user.language_code = all the language codes provided by the student
-        TODO fix this
-
-        */
+        db.query(`
+        select
+            distinct u.username,
+            u.first_name,
+            u.last_name,
+            t.biography,
+            ts.subject_name,
+            ts.hourly_rate
+        from
+            thetutor4u.user u
+            join thetutor4u.tutor t on u.id = t.user_id
+            join thetutor4u.language_user lu on lu.user_id = u.id
+            join thetutor4u.subject_tutor st on st.tutor_id = u.id
+        where
+            t.last_online > now() - interval '4 seconds'
+            and st.subject_name = $1
+            and lu.language_code in (
+                select
+                    language_code
+                from
+                    language_user
+                where
+                    user_id = $2
+            );`, []);
+            // TODO go from here
     }
 });
 

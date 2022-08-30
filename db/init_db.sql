@@ -49,13 +49,14 @@ create table thetutor4u."user" (
     -- 0 means offline, 1 means online, 2 means busy
     online_status int8 default 0 not null,
     -- unix timestamp (seconds, Date.now() / 1000 in JS) for when account was created
-    time_account_created int8,
-    -- user's unix timestand in seconds of when the last time their account was online
-    last_online int8 default 0 not null,
+    time_account_created timestamp default now(),
+    -- last time their account was online
+    last_online TIMESTAMP,
     -- the user's balance
     balance double precision default 0 not null,
     --     for students: what subject are they currently looking for tutoring in
-    subject_name text
+    subject_name text,
+    password_hash text
 );
 
 create table thetutor4u.language (
@@ -93,6 +94,14 @@ create table thetutor4u.session (
     end_time int8 not null,
     -- tutor's hourly rate for session
     tutor_rate double precision not null
+);
+
+create table thetutor4u.rating (
+    rating_user_id text not null,
+    rated_user_id text not null,
+    rating_text text not null,
+    rating_value integer not null,
+    time_rating_left timestamp not null
 );
 
 -- populate language table with all languages
