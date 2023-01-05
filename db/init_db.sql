@@ -1,7 +1,3 @@
-/*
- All timestamps in this database will be recorded as unix timestamps in seconds. Unix second timestamp can be found
- with parseInt(Date.now() / 1000) in node/browser js.
- */
 -- if the schema exists, remove it and recreate it from scratch
 drop schema if exists thetutor4u cascade;
 
@@ -20,9 +16,9 @@ create table thetutor4u.conversation_user (
 create table thetutor4u.message (
     conversation_id int8 not null,
     content text not null,
-    time_sent int8 not null,
+    time_sent timestamp not null,
     received bool not null,
-    time_received int8
+    time_received timestamp
 );
 
 /*
@@ -49,13 +45,14 @@ create table thetutor4u."user" (
     -- 0 means offline, 1 means online, 2 means busy
     online_status int8 default 0 not null,
     -- unix timestamp (seconds, Date.now() / 1000 in JS) for when account was created
-    time_account_created int8,
-    -- user's unix timestand in seconds of when the last time their account was online
-    last_online int8 default 0 not null,
+    time_account_created timestamp default now(),
+    -- last time their account was online
+    last_online TIMESTAMP,
     -- the user's balance
     balance double precision default 0 not null,
     --     for students: what subject are they currently looking for tutoring in
-    subject_name text
+    subject_name text,
+    password_hash text
 );
 
 create table thetutor4u.language (
@@ -83,7 +80,8 @@ create table thetutor4u.tutor (
 create table thetutor4u.subject_tutor (
     subject_name text not null,
     tutor_id text not null,
-    -- is the tutor teaching this subject right now
+    hourly_rate double precision default 0 not null,
+    -- when tutors are in the pool this is true, but when they are in the session this is false
     teaching_now integer default 0 not null
 );
 
@@ -94,6 +92,14 @@ create table thetutor4u.session (
     end_time int8 not null,
     -- tutor's hourly rate for session
     tutor_rate double precision not null
+);
+
+create table thetutor4u.rating (
+    rating_user_id text not null,
+    rated_user_id text not null,
+    rating_text text not null,
+    rating_value integer not null,
+    time_rating_left timestamp not null
 );
 
 -- populate language table with all languages

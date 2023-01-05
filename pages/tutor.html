@@ -19,7 +19,6 @@
         </div>
 
         <div>Tutor Dashboard</div>
-        <!-- if user is not a tutor, offer them to sign up -->
         <div id="not_a_tutor" style="display: none">You are not a tutor, sign up here</div>
         <form id="signup_tutor_form" style="display: none" method="post" action="/api/register-tutor">
             <button type="submit">Become a tutor (instant accept for now)</button>
@@ -35,11 +34,18 @@
             You are not qualified to teach any subjects as of right now. Please use the above link to sign up for more
             subjects
         </div>
-        <form style="display: none" id="find_students_form" method="post" action="/search">
-            <input type="hidden" name="context" value="tutor" />
+        <form style="display: none" id="find_students_form">
             <div>Subjects</div>
-            <select id="select" name="subject" mulitple="true"></select>
-            <button id="find_students_button" type="submit">Find Students</button>
+            <select id="select_subjects" name="subjects" multiple="true"></select>
+            <button id="continue_button" type="button">Continue</button>
+        </form>
+        <form style="display: none" id="rates_form">
+            <div>
+                Please specify the hourly rates for each subject that you have selected to teach. Press back to go back.
+            </div>
+            <div id="rates_form_middle"></div>
+            <button type="button" id="back_button">Back</button>
+            <button id = "find_students_button" type="button">Find Students</button>
         </form>
         <script type="module" src="/js/tutor.js"></script>
     </body>

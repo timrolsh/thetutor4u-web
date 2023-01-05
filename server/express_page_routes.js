@@ -3,6 +3,10 @@ const rootPath = require("./root_path");
 const db = require("./db_pool");
 const crypto = require("crypto");
 const {getUser, googleClient} = require("./user_authentication");
+const fs = require("fs");
+const jwt = require("jsonwebtoken");
+const privateKey = fs.readFileSync(`${rootPath}/authentication/jwtRS256.key`);
+const bcrypt = require("bcrypt");
 
 /*
 About page, looks the same for everyone no matter if they are logged in or not. Static page
@@ -43,6 +47,12 @@ server.get("/tutor/apply-subject", (request, response) => {
 });
 server.get("/tutor/create-subject", (request, response) => {
     processProtectedEndpoint(request, response, "tutor/create-subject");
+});
+server.get("/search/find-tutor", (request, response) => {
+    processProtectedEndpoint(request, response, "search/find-tutor");
+});
+server.get("/search/find-student", (request, response) => {
+    processProtectedEndpoint(request, response, "search/find-student");
 });
 
 /*
@@ -156,22 +166,17 @@ server.post("/tutor/create-subject", (request, response) => {
         if (user === false) {
             response.redirect("/");
         } else {
-            console.log("a");
             if (request.body.subject) {
                 db.query("select * from thetutor4u.subject where name = $1;", [request.body.subject]).then(({rows}) => {
-                    console.log("b");
                     // if subject does not exist, create a new subject and register tutor to teach that subject
                     if (rows.length === 0) {
-                        console.log("c");
                         db.query("insert into thetutor4u.subject (name) values ($1);", [request.body.subject])
                             .then(() => {
-                                console.log("d");
                                 db.query(
                                     "insert into thetutor4u.subject_tutor (tutor_id, subject_name) values ($1, $2)",
                                     [user.sub, request.body.subject]
                                 )
                                     .then(() => {
-                                        console.log("e");
                                         response.redirect("/tutor");
                                     })
 
@@ -247,41 +252,211 @@ server.post("/auth/google/callback", (request, response) => {
             user = user.getPayload();
             response.cookie("token", request.body.credential);
             db.query("select * from thetutor4u.user where id = $1;", [user.sub]).then((dbResponse) => {
-                console.log(`made query for user ${user.name}`);
                 // if user does not exist in the database, add a new entry for them
                 if (dbResponse.rows.length === 0) {
-                    console.log(
-                        `new user ${user.name}, has been authenticated, but they are not found in database. ` +
-                            `Inserting new user into database.`
-                    );
                     db.query(
-                        "insert into thetutor4u.user (id, email, username, first_name, last_name, " +
-                            "time_account_created, iss) values ($1, $2, $3, $4, $5, $6, $7);",
-                        [
-                            user.sub,
-                            user.email,
-                            crypto.randomUUID(),
-                            user.given_name,
-                            user.family_name,
-                            parseInt(Date.now() / 1000),
-                            user.iss
-                        ]
+                        "insert into thetutor4u.user (id, email, username, first_name, last_name, iss) values ($1, $2, $3, $4, $5, $6);",
+                        [user.sub, user.email, crypto.randomUUID(), user.given_name, user.family_name, user.iss]
                     ).then(() => {
-                        console.log(`Adding default spoken language for new user ${user.name} English.`);
                         db.query("insert into thetutor4u.language_user (language_code, user_id) values ($1, $2);", [
                             "en",
                             user.sub
                         ]).then(() => {
-                            console.log("Fully added new user to database, redirecting them back to home");
                             response.redirect("/");
                         });
                     });
                 } else {
-                    console.log(`found user ${user.name} in database, not adding.`);
                     response.redirect("/");
                 }
             });
         });
+});
+
+server.post("/tutor/apply-subject", (request, response) => {
+    function errorCallback(error) {
+        console.log(error);
+        response.statusCode = 500;
+        response.send("database error");
+        return;
+    }
+    if (request.body.subject) {
+        getUser(request, response, (user) => {
+            if (user === false) {
+                response.redirect("/");
+            } else {
+                // verify that user is a tutor, verify that the tutor does not already teach this subject, then insert the new subject tutor
+                db.query("select * from thetutor4u.tutor where user_id = $1;", [user.sub])
+                    .then(({rows}) => {
+                        // user is a tutor
+                        if (rows.length !== 0) {
+                            db.query(
+                                "select * from thetutor4u.subject_tutor where subject_name = $1 and tutor_id = $2;",
+                                [request.body.subject]
+                            )
+                                .then(({rows}) => {
+                                    // tutor doesn't teach this subject already
+                                    if (rows.length === 0) {
+                                        db.query(
+                                            "insert into thetutor4u.subject_tutor (subject_name, tutor_id) values ($1, $2);",
+                                            [request.body.subject, user.sub]
+                                        )
+                                            .then(() => {
+                                                response.redirect("/tutor");
+                                            })
+                                            .catch(errorCallback);
+                                    } else {
+                                        response.redirect("/tutor");
+                                    }
+                                })
+                                .catch(errorCallback);
+                        }
+                        // user is not a tutor
+                        else {
+                            response.redirect("/");
+                        }
+                    })
+                    .catch(errorCallback);
+            }
+        });
+    } else {
+        response.redirect("/");
+    }
+});
+
+server.get("/signup", (request, response) => {
+    getUser(request, response, (user) => {
+        if (user === false) {
+            response.sendFile(`${rootPath}/pages/authentication/signup-email.html`);
+        } else {
+            response.redirect("/");
+        }
+    });
+});
+
+server.post("/signup", (request, response) => {
+    // verify that all of the fields exists in the request
+    if (
+        !(
+            request.body.username &&
+            request.body.password &&
+            request.body.first_name &&
+            request.body.last_name &&
+            request.body.email &&
+            request.body.dob
+        )
+    ) {
+        response.statusCode = 400;
+        response.send("Not all of the proper fields have been supplied.");
+    } else {
+        getUser(request, response, (user) => {
+            // verify that user is not logged in
+            if (user !== false) {
+                response.redirect("/");
+            } else {
+                // verify that the username has not been taken
+                db.query("select * from thetutor4u.user where username = $1;", [request.body.username]).then(
+                    ({rows}) => {
+                        if (rows.length !== 0) {
+                            response.statusCode = 400;
+                            response.send("The username you have provided has already been taken.");
+                        } else {
+                            const randomUUID = crypto.randomUUID();
+                            response.cookie(
+                                "token",
+                                jwt.sign(
+                                    {
+                                        iss: "email",
+                                        sub: randomUUID,
+                                        email: request.body.email,
+                                        name: `${request.body.first_name} ${request.body.last_name}`,
+                                        given_name: request.body.first_name,
+                                        family_name: request.body.last_name,
+                                        iat: parseInt(Date.now() / 1000)
+                                    },
+                                    privateKey,
+                                    {algorithm: "RS256"}
+                                )
+                            );
+                            bcrypt.hash(request.body.password, 10, (_, hash) => {
+                                db.query(
+                                    "insert into thetutor4u.user (id, email, username, first_name, last_name, iss, password_hash) values ($1, $2, $3, $4, $5, $6, $7);",
+                                    [
+                                        randomUUID,
+                                        request.body.email,
+                                        request.body.username,
+                                        request.body.first_name,
+                                        request.body.last_name,
+                                        "email",
+                                        hash
+                                    ]
+                                ).then(() => {
+                                    db.query(
+                                        "insert into thetutor4u.language_user (language_code, user_id) values ($1, $2);",
+                                        ["en", randomUUID]
+                                    ).then(() => {
+                                        response.redirect("/");
+                                    });
+                                });
+                            });
+                        }
+                    }
+                );
+            }
+        });
+    }
+});
+
+server.post("/login", (request, response) => {
+    if (!(request.body.username && request.body.password)) {
+        response.redirect("/");
+    } else {
+        getUser(request, response, (user) => {
+            if (user !== false) {
+                response.redirect("/");
+            } else {
+                db.query("select * from thetutor4u.user where username = $1;", [request.body.username]).then(
+                    ({rows}) => {
+                        // invalid login credentials
+                        if (rows.length === 0) {
+                            response.redirect("/login");
+                        } else {
+                            bcrypt.hash(request.body.password, 10, (_, hash) => {
+                                bcrypt.compare(request.body.password, rows[0].password_hash, () => {
+                                    response.cookie(
+                                        "token",
+                                        jwt.sign(
+                                            {
+                                                iss: "email",
+                                                sub: rows[0].id,
+                                                email: rows[0].email,
+                                                name: `${rows[0].first_name} ${rows[0].last_name}`,
+                                                given_name: rows[0].first_name,
+                                                family_name: rows[0].last_name,
+                                                iat: parseInt(Date.now() / 1000)
+                                            },
+                                            privateKey,
+                                            {algorithm: "RS256"}
+                                        )
+                                    );
+                                    response.redirect("/");
+                                });
+                            });
+                        }
+                    }
+                );
+            }
+        });
+    }
+});
+
+server.get("/login", (request, response) => {
+    getUser(request, response, (user) => {
+        if (user !== false) {
+            response.redirect("/");
+        } else {
+            response.sendFile(`${rootPath}/pages/authentication/login-email.html`);
+        }
+    });
 });
 
 module.exports = server;

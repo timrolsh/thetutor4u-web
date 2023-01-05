@@ -77,10 +77,7 @@ server.get("/api/heartbeat", (request, response) => {
             response.statusCode = 400;
             response.send("Log in to access this endpoint. ");
         } else {
-            db.query("update thetutor4u.user set last_online = $1 where id = $2;", [
-                parseInt(Date.now() / 1000),
-                user.sub
-            ])
+            db.query("update thetutor4u.user set last_online = now() where id = $1;", [user.sub])
                 .catch((error) => {
                     console.log(error);
                     response.statusCode = 500;
@@ -94,30 +91,47 @@ server.get("/api/heartbeat", (request, response) => {
     });
 });
 
+server.post("/api/active-students", (request, response) => {});
+
 /*
-TODO add
-*/
-server.post("/api/active-students", (request, response) => {
-    if (!(request.body.subject && request.body.language)) {
+Responds with a json array of the following objects:
+{
+    username: string,
+    first_name: string,
+    last_name: string,
+    hourly_rate: string
+}*/
+server.post("/api/active-tutors", (request, response) => {
+    const languages = request.body.languages;
+    // check that all the required fields are there
+    if (!(languages && Array.isArray(languages) && request.body.subject)) {
         response.statusCode = 400;
-        response.send("You must provide an english language name and a english subject in order");
+        response.send("Invalid request sent: Include an array of language codes languages and a subject name subject");
     } else {
-        db.query("select username, first_name, last_name from thetutor4u.user where subject_name = $1;", [
-            request.body.subject
-        ])
+        let subjectsSQL = "";
+
+        for (let a = 0; a < languages.length - 1; ++a) {
+            subjectsSQL += `'${languages[a]}', `;
+        }
+        subjectsSQL += `'${languages[languages.length - 1]}'`;
+        db.query(
+            `select distinct u.username, u.first_name, u.last_name, t.biography, st.subject_name, st.hourly_rate` +
+                ` from thetutor4u.user u join thetutor4u.tutor t on u.id = t.user_id join thetutor4u.language_user` +
+                ` lu on lu.user_id = u.id join thetutor4u.subject_tutor st on st.tutor_id = u.id where u.last_online` +
+                ` > now() - interval '4 seconds' and st.subject_name = '${request.body.subject}' and lu.language_code` +
+                ` in (${subjectsSQL}) and st.teaching_now = 1;`
+        )
             .then(({rows}) => {
                 response.statusCode = 200;
                 response.send(rows);
             })
             .catch((error) => {
-                console.log(error);
                 response.statusCode = 500;
-                response.send("database error");
+                response.send("Database error");
+                console.log(error);
             });
     }
 });
-// TODO add
-server.post("/api/active-tutors", (request, response) => {});
 
 /*
 Returns user info in the following JSON format:
